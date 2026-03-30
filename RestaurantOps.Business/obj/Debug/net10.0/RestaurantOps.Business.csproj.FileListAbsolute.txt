@@ -15,3 +15,4 @@ C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\Res
 C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Business\obj\Debug\net10.0\refint\RestaurantOps.Business.dll
 C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Business\obj\Debug\net10.0\RestaurantOps.Business.pdb
 C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Business\obj\Debug\net10.0\ref\RestaurantOps.Business.dll
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Business\obj\Debug\net10.0\RestaurantOps.Business.sourcelink.json

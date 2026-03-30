@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using RestaurantOps.Models;
 using RestaurantOps.Business.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RestaurantOps.Web.Controllers;
 
 /// <summary>
 /// Handles all Ingredient-related operations (CRUD).
 /// </summary>
+[Authorize]
 public class IngredientController : Controller
 {
     private readonly IIngredientService _service;
@@ -25,12 +27,16 @@ public class IngredientController : Controller
     public IActionResult Index()
     {
         var ingredients = _service.GetAll();
+
+        ViewBag.TotalValue = _service.GetTotalInventoryValue();
+
         return View(ingredients);
     }
 
     /// <summary>
     /// Shows create form
     /// </summary>
+    [Authorize(Roles = "Manager")]
     public IActionResult Create()
     {
         return View();
@@ -39,7 +45,7 @@ public class IngredientController : Controller
     /// <summary>
     /// Handles form submission
     /// </summary>
-    [HttpPost]
+    [Authorize(Roles = "Manager")]
     [HttpPost]
     public IActionResult Create(Ingredient ingredient)
     {
@@ -61,6 +67,7 @@ public class IngredientController : Controller
     /// <summary>
     /// Displays edit form
     /// </summary>
+    [Authorize(Roles = "Manager")]
     public IActionResult Edit(int id)
     {
         var ingredient = _service.GetById(id);
@@ -77,6 +84,7 @@ public class IngredientController : Controller
     /// Handles edit form submission
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Manager")]
     public IActionResult Edit(Ingredient ingredient)
     {
         try
@@ -97,6 +105,7 @@ public class IngredientController : Controller
     /// <summary>
     /// Shows delete confirmation page
     /// </summary>
+    [Authorize(Roles = "Manager")]
     public IActionResult Delete(int id)
     {
         var ingredient = _service.GetById(id);
@@ -113,6 +122,7 @@ public class IngredientController : Controller
     /// Confirms delete action
     /// </summary>
     [HttpPost, ActionName("Delete")]
+    [Authorize(Roles = "Manager")]
     public IActionResult DeleteConfirmed(int id)
     {
         _service.Delete(id);

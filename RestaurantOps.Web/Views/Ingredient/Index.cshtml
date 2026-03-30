@@ -2,30 +2,42 @@
 
 <h2>Ingredients</h2>
 
-<a href="/Ingredient/Create" class="btn btn-primary">Add Ingredient</a>
+@if (User.IsInRole("Manager"))
+{
+    <a href="/Ingredient/Create" class="btn btn-primary">Add Ingredient</a>
+}
 
-<table class="table table-striped mt-3">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Unit</th>
-        <th>Quantity</th>
-        <th>Cost</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+<h4>Total Inventory Value:
+    <span class="text-success">
+        @(ViewBag.TotalValue != null ? ((decimal)ViewBag.TotalValue).ToString("C") : "$0.00") </span>
+    </h4>
+
+    <table class="table table-striped mt-3">
+        <thead>
             <tr>
-                <td>@item.Name</td>
-                <td>@item.Unit</td>
-                <td>@item.QuantityOnHand.ToString("0.##")</td>
-                <td>@item.CostPerUnit.ToString("0.00")</td>
-                <td>
-                    <a href="/Ingredient/Edit/@item.IngredientId" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="/Ingredient/Delete/@item.IngredientId" class="btn btn-danger btn-sm">Delete</a>                </td>
+                <th>Name</th>
+                <th>Unit</th>
+                <th>Quantity</th>
+                <th>Cost</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Unit</td>
+                    <td>@item.QuantityOnHand.ToString("0.##")</td>
+                    <td>@item.CostPerUnit.ToString("0.00")</td>
+                    <td>
+                        @if (User.IsInRole("Manager"))
+                        {
+                            <a href="/Ingredient/Edit/@item.IngredientId" class="btn btn-warning btn-sm">Edit</a>
+                            <a href="/Ingredient/Delete/@item.IngredientId" class="btn btn-danger btn-sm">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>

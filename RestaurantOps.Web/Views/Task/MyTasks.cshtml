@@ -1,0 +1,33 @@
+@model IEnumerable<RestaurantOps.Models.TaskAssignment>
+
+<h2>My Tasks</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Update</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var task in Model)
+        {
+            <tr>
+                <td>@task.Title</td>
+                <td>@task.Status</td>
+                <td>
+                    <form asp-action="UpdateStatus" method="post">
+                        <input type="hidden" name="id" value="@task.TaskAssignmentId" />
+                        <select name="status">
+                            <option>Pending</option>
+                            <option>In Progress</option>
+                            <option>Completed</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

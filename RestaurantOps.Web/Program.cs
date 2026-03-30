@@ -4,6 +4,7 @@ using RestaurantOps.Data.Interfaces;
 using RestaurantOps.Data.Repositories;
 using RestaurantOps.Business.Interfaces;
 using RestaurantOps.Business.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +20,18 @@ builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 
 // Register Service (Business Layer)
 builder.Services.AddScoped<IIngredientService, IngredientService>();
+builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 // Add MVC
 builder.Services.AddControllersWithViews();
+
+// Add Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+    });
 
 var app = builder.Build();
 
@@ -35,12 +45,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

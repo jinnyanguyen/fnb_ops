@@ -30,4 +30,19 @@ public class ApplicationDbContext : DbContext
     /// Sales table
     /// </summary>
     public DbSet<Sale> Sales { get; set; }
+
+    /// <summary>
+    /// Users table
+    /// </summary>
+    public DbSet<User> Users { get; set; }
+
+    /// <summary>
+    /// Recipe Ingredient table
+    /// </summary>
+    public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
+
+/// <summary>
+/// Task Assignment table
+/// </summary>
+    public DbSet<TaskAssignment> TaskAssignments { get; set; }
 }

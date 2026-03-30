@@ -24,4 +24,9 @@ public class Recipe
     /// Category used to group recipes, such as Burger, Pasta, Beverage, etc.
     /// </summary>
     public string Category { get; set; } = string.Empty;
+
+    /// <summary>
+    /// A recipe has a list of ingredients attached to it
+    /// </summary>
+    public List<RecipeIngredient> RecipeIngredients { get; set; } = new();
 }

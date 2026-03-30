@@ -9,3 +9,4 @@ C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\Res
 C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net10.0\refint\RestaurantOps.Models.dll
 C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net10.0\RestaurantOps.Models.pdb
 C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net10.0\ref\RestaurantOps.Models.dll
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net10.0\RestaurantOps.Models.sourcelink.json

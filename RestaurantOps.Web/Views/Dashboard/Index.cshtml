@@ -1,0 +1,28 @@
+<h2>Manager Dashboard</h2>
+
+<div class="row mt-4">
+
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm">
+            <h5>Total Inventory Value</h5>
+            <h3 class="text-success">
+                @(ViewBag.TotalValue != null ? ((decimal)ViewBag.TotalValue).ToString("C") : "$0.00")
+            </h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm">
+            <h5>Total Ingredients</h5>
+            <h3>@ViewBag.TotalItems</h3>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm">
+            <h5>Low Stock Items</h5>
+            <h3 class="text-danger">@ViewBag.LowStock</h3>
+        </div>
+    </div>
+
+</div>

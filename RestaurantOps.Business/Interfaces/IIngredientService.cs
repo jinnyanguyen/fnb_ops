@@ -16,4 +16,6 @@ public interface IIngredientService
     void Update(Ingredient ingredient);
 
     void Delete(int id);
+
+    decimal GetTotalInventoryValue();
 }

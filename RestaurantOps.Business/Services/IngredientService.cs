@@ -34,7 +34,7 @@ public class IngredientService : IIngredientService
         return _repository.GetById(id);
     }
 
-   public void Add(Ingredient ingredient)
+    public void Add(Ingredient ingredient)
     {
         if (ingredient.QuantityOnHand < 0 || ingredient.CostPerUnit < 0)
         {
@@ -68,5 +68,17 @@ public class IngredientService : IIngredientService
 
         _repository.Delete(id);
         _repository.Save();
+    }
+
+    /// <summary>
+    /// Calculates total inventory value.
+    /// </summary>
+    public decimal GetTotalInventoryValue()
+    {
+        _logger.LogInformation("Calculating total inventory value");
+
+        var ingredients = _repository.GetAll();
+
+        return ingredients.Sum(i => i.QuantityOnHand * i.CostPerUnit);
     }
 }
