@@ -37,6 +37,7 @@ public class RecipeController : Controller
     /// </summary>
     public IActionResult Create()
     {
+        ViewBag.Ingredients = _ingredientService.GetAll();
         return View();
     }
 
@@ -51,6 +52,9 @@ public class RecipeController : Controller
             _recipeService.Add(recipe);
             return RedirectToAction("Index");
         }
+
+        // Re-populate dropdown if validation fails
+        ViewBag.Ingredients = _ingredientService.GetAll();
 
         return View(recipe);
     }

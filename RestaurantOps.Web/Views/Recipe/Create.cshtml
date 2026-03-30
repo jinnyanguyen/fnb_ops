@@ -1,0 +1,22 @@
+@model RestaurantOps.Models.Recipe
+
+<h2>Create Recipe</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="form-group">
+        <label>Ingredients</label>
+
+        <select name="SelectedIngredientIds" multiple class="form-control">
+            @foreach (var item in ViewBag.Ingredients)
+            {
+                <option value="@item.IngredientId">
+                    @item.Name
+                </option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+
+</form>
