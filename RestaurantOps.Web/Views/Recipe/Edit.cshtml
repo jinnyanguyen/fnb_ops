@@ -2,11 +2,13 @@
 
 <div class="container mt-4">
 
-    <h2>Create Recipe</h2>
+    <h2>Edit Recipe</h2>
 
     <div asp-validation-summary="All" class="text-danger"></div>
 
-    <form asp-action="Create" method="post">
+    <form asp-action="Edit" method="post">
+
+        <input type="hidden" asp-for="RecipeId" />
 
         <div class="form-group">
             <label>Name</label>
@@ -29,10 +31,10 @@
         <br />
 
         <button type="submit" class="btn btn-success">
-            Create Recipe
+            Save Changes
         </button>
 
-        <a asp-controller="Recipe" asp-action="Index" class="btn btn-secondary">
+        <a asp-action="Index" class="btn btn-secondary">
             Cancel
         </a>
 

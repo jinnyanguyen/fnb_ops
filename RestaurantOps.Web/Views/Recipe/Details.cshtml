@@ -2,11 +2,36 @@
 
 <h2>@Model.Name</h2>
 
-<h4>Total Cost:
-    <span class="text-success">
-        @(ViewBag.Cost != null ? ((decimal)ViewBag.Cost).ToString("C") : "$0.00")
-    </span>
-</h4>
+<hr />
+
+<h4>Recipe Information</h4>
+
+<p><strong>Category:</strong> @Model.Category</p>
+<p><strong>Selling Price:</strong> $@Model.SellingPrice</p>
+
+
+<hr />
+
+<h4>Financial Summary</h4>
+
+<div class="card p-3 mb-3">
+
+    <p>
+        <strong>Total Cost:</strong> 
+        $@string.Format("{0:F2}", ViewBag.Cost)
+    </p>
+
+    <p>
+        <strong>Profit:</strong> 
+        $@string.Format("{0:F2}", ViewBag.Profit ?? 0)
+    </p>
+
+    <p>
+        <strong>Profit Margin:</strong> 
+        @string.Format("{0:F2}", ViewBag.Margin ?? 0) %
+    </p>
+
+</div>
 
 <hr />
 
@@ -15,44 +40,93 @@
 <form asp-action="AddIngredient" method="post">
     <input type="hidden" name="recipeId" value="@Model.RecipeId" />
 
-    <div class="form-group mb-2">
+    <div class="form-group">
         <label>Ingredient</label>
         <select name="ingredientId" class="form-control">
-            @foreach (var ing in ViewBag.Ingredients)
+            @foreach (var item in ViewBag.Ingredients)
             {
-                <option value="@ing.IngredientId">@ing.Name</option>
+                <option value="@item.IngredientId">
+                    @item.Name
+                </option>
             }
         </select>
     </div>
 
-    <div class="form-group mb-2">
+    <div class="form-group mt-2">
         <label>Quantity</label>
-        <input type="number" step="0.01" name="quantity" class="form-control" />
+        <input type="number" step="0.01" name="quantity" class="form-control" required />
     </div>
 
-    <button type="submit" class="btn btn-primary">Add</button>
+    <br />
+
+    <button type="submit" class="btn btn-primary">
+        Add Ingredient
+    </button>
 </form>
 
 <hr />
 
 <h4>Ingredients in Recipe</h4>
 
-<table class="table">
+<table class="table table-bordered table-striped mt-3">
     <thead>
         <tr>
             <th>Name</th>
             <th>Quantity</th>
-            <th>Cost</th>
+            <th>Cost Per Unit</th>
+            <th>Total</th>
+            <th>Action</th>
         </tr>
     </thead>
+
     <tbody>
-        @foreach (var item in Model.RecipeIngredients)
+        @if (Model.RecipeIngredients != null && Model.RecipeIngredients.Any())
+        {
+            @foreach (var item in Model.RecipeIngredients)
+            {
+                <tr>
+                    <td>@item.Ingredient?.Name</td>
+
+                    <td>
+                        @item.Quantity.ToString("0.##")
+                    </td>
+
+                    <td>
+                        @item.Ingredient?.CostPerUnit.ToString("0.00")
+                    </td>
+
+                    <td>
+                        @((item.Quantity * (item.Ingredient?.CostPerUnit ?? 0)).ToString("0.00"))
+                    </td>
+
+                    <td>
+                        <form asp-action="RemoveIngredient" asp-controller="Recipe" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="recipeId" value="@Model.RecipeId" />
+                            <input type="hidden" name="ingredientId" value="@item.IngredientId" />
+
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                Remove
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>@item.Ingredient?.Name</td>
-                <td>@item.Quantity</td>
-                <td>@(item.Quantity * item.Ingredient?.CostPerUnit)</td>
+                <td colspan="5" class="text-center text-muted">
+                    No ingredients added yet.
+                </td>
             </tr>
         }
     </tbody>
 </table>
+
+<br />
+
+<a asp-controller="Recipe" asp-action="Index" class="btn btn-secondary">
+    Back to Recipes
+</a>

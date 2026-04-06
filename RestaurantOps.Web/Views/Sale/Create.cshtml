@@ -1,0 +1,40 @@
+@model RestaurantOps.Models.Sale
+
+<div class="container mt-4">
+
+    <h2>Add Sale</h2>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <form asp-action="Create" method="post">
+
+        <div class="form-group">
+            <label>Recipe</label>
+            <select asp-for="RecipeId" class="form-control">
+                <option value="">-- Select Recipe --</option>
+                @foreach (var item in ViewBag.Recipes)
+                {
+                    <option value="@item.RecipeId">@item.Name</option>
+                }
+            </select>
+            <span asp-validation-for="RecipeId" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mt-3">
+            <label>Quantity Sold</label>
+            <input asp-for="QuantitySold" class="form-control" />
+            <span asp-validation-for="QuantitySold" class="text-danger"></span>
+        </div>
+
+        <br />
+
+        <button type="submit" class="btn btn-success">Save Sale</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

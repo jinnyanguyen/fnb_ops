@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantOps.Business.Interfaces;
+using RestaurantOps.Business.Services;
 
 namespace RestaurantOps.Web.Controllers;
 
@@ -11,10 +12,26 @@ namespace RestaurantOps.Web.Controllers;
 public class DashboardController : Controller
 {
     private readonly IIngredientService _ingredientService;
+    private readonly IRecipeService _recipeService;
+    private readonly ITaskService _taskService;
+    private readonly ISaleService _saleService;
 
-    public DashboardController(IIngredientService ingredientService)
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="ingredientService"></param>
+    /// <param name="recipeService"></param>
+    /// <param name="taskService"></param>
+    public DashboardController(
+    IIngredientService ingredientService,
+    IRecipeService recipeService,
+    ITaskService taskService,
+    ISaleService saleService)
     {
         _ingredientService = ingredientService;
+        _recipeService = recipeService;
+        _taskService = taskService;
+        _saleService = saleService;
     }
 
     /// <summary>
@@ -23,17 +40,44 @@ public class DashboardController : Controller
     public IActionResult Index()
     {
         var ingredients = _ingredientService.GetAll();
+        var recipes = _recipeService.GetAll();
+        var tasks = _taskService.GetAll();
+        var sales = _saleService.GetAll();
 
-        var totalValue = _ingredientService.GetTotalInventoryValue();
+        // Total Inventory Value
+        decimal totalInventoryValue = ingredients.Sum(i => i.QuantityOnHand * i.CostPerUnit);
 
-        var totalItems = ingredients.Count;
+        // Total Ingredients
+        int totalIngredients = ingredients.Count;
 
-        // Simple low stock logic (example: quantity < 5)
-        var lowStockCount = ingredients.Count(i => i.QuantityOnHand < 5);
+        // Total Recipes
+        int totalRecipes = recipes.Count;
 
-        ViewBag.TotalValue = totalValue;
-        ViewBag.TotalItems = totalItems;
-        ViewBag.LowStock = lowStockCount;
+        // Open Tasks
+        int openTasks = tasks.Count(t => t.Status != "Completed");
+
+        // Total Sales Revenue
+        decimal totalSales = sales.Sum(s => s.TotalAmount);
+
+        ViewBag.TotalInventoryValue = totalInventoryValue;
+        ViewBag.TotalIngredients = totalIngredients;
+        ViewBag.TotalRecipes = totalRecipes;
+        ViewBag.OpenTasks = openTasks;
+        ViewBag.TotalSales = totalSales;
+
+        var groupedSales = sales
+     .Where(s => s.SaleDate != default)
+     .GroupBy(s => s.SaleDate.Date)
+     .OrderBy(g => g.Key)
+     .ToList();
+
+        ViewBag.SalesDates = groupedSales
+            .Select(g => g.Key.ToString("yyyy-MM-dd"))
+            .ToList();
+
+        ViewBag.SalesTotals = groupedSales
+            .Select(g => g.Sum(s => s.TotalAmount))
+            .ToList();
 
         return View();
     }

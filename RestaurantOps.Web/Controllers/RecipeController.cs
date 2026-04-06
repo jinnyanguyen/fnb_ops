@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantOps.Business.Interfaces;
+using RestaurantOps.Business.Services;
 using RestaurantOps.Models;
 
 namespace RestaurantOps.Web.Controllers;
@@ -60,20 +61,29 @@ public class RecipeController : Controller
     }
 
     /// <summary>
-    /// Displays recipe details with ingredients.
-    /// </summary>
-    public IActionResult Details(int id)
-    {
-        var recipe = _recipeService.GetById(id);
+/// Displays recipe details along with cost and profit analysis.
+/// </summary>
+public IActionResult Details(int id)
+{
+    var recipe = _recipeService.GetById(id);
 
-        if (recipe == null)
-            return NotFound();
+    if (recipe == null)
+        return NotFound();
+    var cost = _recipeService.CalculateRecipeCost(id);
+    var profit = _recipeService.CalculateProfit(id);
+    var margin = _recipeService.CalculateProfitMargin(id);
 
-        ViewBag.Cost = _recipeService.CalculateRecipeCost(id);
-        ViewBag.Ingredients = _ingredientService.GetAll();
+    Console.WriteLine($"Debug cost: {cost}");
+    Console.WriteLine($"Debug profit: {profit}");
+    Console.WriteLine($"Debug margin: {margin}");
 
-        return View(recipe);
-    }
+    ViewBag.Cost = cost;
+    ViewBag.Profit = profit;
+    ViewBag.Margin = margin;
+
+    ViewBag.Ingredients = _ingredientService.GetAll();
+    return View(recipe);
+}
 
     /// <summary>
     /// Adds ingredient to recipe.
@@ -83,5 +93,47 @@ public class RecipeController : Controller
     {
         _recipeService.AddIngredientToRecipe(recipeId, ingredientId, quantity);
         return RedirectToAction("Details", new { id = recipeId });
+    }
+
+    /// <summary>
+    /// Removes an ingredient from a recipe.
+    /// </summary>
+    [HttpPost]
+    public IActionResult RemoveIngredient(int recipeId, int ingredientId)
+    {
+        _recipeService.RemoveIngredientFromRecipe(recipeId, ingredientId);
+        return RedirectToAction("Details", new { id = recipeId });
+    }
+
+    /// <summary>
+    /// Edit an ingredient from a recipe, get edit
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public IActionResult Edit(int id)
+    {
+        var recipe = _recipeService.GetById(id);
+
+        if (recipe == null)
+            return NotFound();
+
+        return View(recipe);
+    }
+
+    /// <summary>
+    /// Handles edit ingredient from recipe
+    /// </summary>
+    /// <param name="recipe"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public IActionResult Edit(Recipe recipe)
+    {
+        if (ModelState.IsValid)
+        {
+            _recipeService.Update(recipe);
+            return RedirectToAction("Index");
+        }
+
+        return View(recipe);
     }
 }

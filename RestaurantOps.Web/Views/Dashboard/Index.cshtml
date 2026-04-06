@@ -1,28 +1,113 @@
-<h2>Manager Dashboard</h2>
+@{
+    ViewData["Title"] = "Dashboard";
+}
 
-<div class="row mt-4">
+<h2>Dashboard</h2>
+
+<!-- ========================= -->
+<!-- SUMMARY CARDS -->
+<!-- ========================= -->
+<div class="row mb-4">
 
     <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
-            <h5>Total Inventory Value</h5>
-            <h3 class="text-success">
-                @(ViewBag.TotalValue != null ? ((decimal)ViewBag.TotalValue).ToString("C") : "$0.00")
-            </h3>
+        <div class="card text-white bg-primary p-3">
+            <h5>Total Recipes</h5>
+            <h2>@ViewBag.TotalRecipes</h2>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
+        <div class="card text-white bg-success p-3">
             <h5>Total Ingredients</h5>
-            <h3>@ViewBag.TotalItems</h3>
+            <h2>@ViewBag.TotalIngredients</h2>
         </div>
     </div>
 
     <div class="col-md-4">
-        <div class="card p-3 shadow-sm">
-            <h5>Low Stock Items</h5>
-            <h3 class="text-danger">@ViewBag.LowStock</h3>
+        <div class="card text-white bg-warning p-3">
+            <h5>Total Sales</h5>
+            <h2>$@ViewBag.TotalSales</h2>
         </div>
     </div>
 
 </div>
+
+<hr />
+
+<!-- ========================= -->
+<!-- SALES TREND -->
+<!-- ========================= -->
+<h3>Sales Trend</h3>
+
+@if (ViewBag.SalesDates == null || ViewBag.SalesTotals == null)
+{
+    <p style="color:red;">⚠️ No sales data available</p>
+}
+
+<!-- CHART -->
+<canvas id="salesChart" height="100"></canvas>
+
+<!-- ========================= -->
+<!-- CHART.JS -->
+<!-- ========================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Default empty arrays (prevents crash)
+    var labels = [];
+    var data = [];
+
+    // Inject data safely from Razor
+    @if (ViewBag.SalesDates != null && ViewBag.SalesTotals != null)
+    {
+        <text>
+            labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((List<string>)ViewBag.SalesDates));
+            data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize((List<decimal>)ViewBag.SalesTotals));
+        </text>
+    }
+
+    // Get canvas context
+    var ctx = document.getElementById('salesChart').getContext('2d');
+
+    // Create chart
+    var salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Sales ($)',
+                data: data,
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: 'red'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Sales ($)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>

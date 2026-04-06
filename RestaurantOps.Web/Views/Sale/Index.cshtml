@@ -1,0 +1,43 @@
+@model IEnumerable<RestaurantOps.Models.Sale>
+
+<div class="container mt-4">
+
+    <h2>Sales</h2>
+
+    <a asp-action="Create" class="btn btn-primary">Add Sale</a>
+
+    <table class="table table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Recipe</th>
+                <th>Quantity Sold</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.SaleDate.ToString("MM/dd/yyyy HH:mm")</td>
+                        <td>@item.Recipe?.Name</td>
+                        <td>@item.QuantitySold</td>
+                        <td>@item.TotalAmount.ToString("0.00")</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">
+                        No sales records found.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
