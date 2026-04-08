@@ -24,13 +24,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore solution
-        run: dotnet restore RestaurantOps.sln
+        run: dotnet restore RestaurantProjects/RestaurantOps.sln
 
       - name: Build solution
-        run: dotnet build RestaurantOps.sln --configuration Release --no-restore
+        run: dotnet build RestaurantProjects/RestaurantOps.sln --configuration Release --no-restore
 
       - name: Publish web app
-        run: dotnet publish RestaurantOps.Web/RestaurantOps.Web.csproj --configuration Release --output publish --no-build
+        run: dotnet publish RestaurantProjects/RestaurantOps.Web/RestaurantOps.Web.csproj --configuration Release --output publish --no-build
 
       - name: Create deployment zip
         run: |
