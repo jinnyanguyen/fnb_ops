@@ -20,4 +20,16 @@ public interface IRecipeService
     void AddIngredientToRecipe(int recipeId, int ingredientId, decimal quantity);
 
     decimal CalculateRecipeCost(int recipeId);
+
+    void RemoveIngredientFromRecipe(int recipeId, int ingredientId);
+
+    /// <summary>
+    /// Calculates profit for a recipe.
+    /// </summary>
+    decimal CalculateProfit(int recipeId);
+
+    /// <summary>
+    /// Calculates profit margin percentage.
+    /// </summary>
+    decimal CalculateProfitMargin(int recipeId);
 }

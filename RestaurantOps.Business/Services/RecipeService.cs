@@ -150,4 +150,54 @@ public class RecipeService : IRecipeService
 
         return totalCost;
     }
+
+    /// <summary>
+    /// Removes an ingredient from a recipe.
+    /// </summary>
+    public void RemoveIngredientFromRecipe(int recipeId, int ingredientId)
+    {
+        _logger.LogWarning("Removing ingredient {IngredientId} from recipe {RecipeId}", ingredientId, recipeId);
+
+        var item = _context.RecipeIngredients
+            .FirstOrDefault(ri => ri.RecipeId == recipeId && ri.IngredientId == ingredientId);
+
+        if (item != null)
+        {
+            _context.RecipeIngredients.Remove(item);
+            _context.SaveChanges();
+        }
+    }
+
+
+    /// <summary>
+    /// Calculates profit = Selling Price - Cost.
+    /// </summary>
+    public decimal CalculateProfit(int recipeId)
+    {
+        var recipe = _context.Recipes.FirstOrDefault(r => r.RecipeId == recipeId);
+
+        if (recipe == null)
+            return 0;
+
+        var cost = CalculateRecipeCost(recipeId);
+
+        return recipe.SellingPrice - cost;
+    }
+
+    /// <summary>
+    /// Calculates profit margin percentage.
+    /// Formula: (Profit / Selling Price) * 100
+    /// </summary>
+    public decimal CalculateProfitMargin(int recipeId)
+    {
+        var recipe = _context.Recipes.FirstOrDefault(r => r.RecipeId == recipeId);
+
+        if (recipe == null || recipe.SellingPrice == 0)
+            return 0;
+
+        var cost = CalculateRecipeCost(recipeId);
+        var profit = recipe.SellingPrice - cost;
+
+        return (profit / recipe.SellingPrice) * 100;
+    }
 }

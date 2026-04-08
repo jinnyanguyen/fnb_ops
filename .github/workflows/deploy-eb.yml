@@ -1,0 +1,58 @@
+name: Build and Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  APPLICATION_NAME: gusto
+  ENVIRONMENT_NAME: Gusto-env
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore solution
+        run: dotnet restore RestaurantOps.sln
+
+      - name: Build solution
+        run: dotnet build RestaurantOps.sln --configuration Release --no-restore
+
+      - name: Publish web app
+        run: dotnet publish RestaurantOps.Web/RestaurantOps.Web.csproj --configuration Release --output publish --no-build
+
+      - name: Create deployment zip
+        run: |
+          cd publish
+          zip -r ../deploy.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Generate deployment version label
+        id: version_label
+        run: echo "label=build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Elastic Beanstalk
+        uses: aws-actions/aws-elasticbeanstalk-deploy@v1.0.2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          application-name: ${{ env.APPLICATION_NAME }}
+          environment-name: ${{ env.ENVIRONMENT_NAME }}
+          version-label: ${{ steps.version_label.outputs.label }}
+          deployment-package: deploy.zip

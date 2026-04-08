@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RestaurantOps.Models;
 
 /// <summary>
@@ -13,20 +15,28 @@ public class Sale
     /// <summary>
     /// Foreign key reference to the related recipe.
     /// </summary>
+    [Required(ErrorMessage = "Recipe is required.")]
     public int RecipeId { get; set; }
 
     /// <summary>
     /// Number of units sold for the recipe.
     /// </summary>
+    [Range(1, 100000, ErrorMessage = "Quantity sold must be at least 1.")]
     public int QuantitySold { get; set; }
 
     /// <summary>
     /// Date the sale occurred.
     /// </summary>
+    [Required(ErrorMessage = "Sale date is required.")]
     public DateTime SaleDate { get; set; }
 
     /// <summary>
-    /// Total amount for the sale entry.
+    /// Total amount is calculated automatically (not user input).
     /// </summary>
     public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// Navigation property to the related recipe.
+    /// </summary>
+    public Recipe? Recipe { get; set; }
 }
