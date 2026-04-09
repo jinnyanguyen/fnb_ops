@@ -22,15 +22,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      
+      - name: Debug - List files
+        run: ls -R
 
       - name: Restore solution
-        run: dotnet restore RestaurantProjects/RestaurantOps.sln
+        run: dotnet restore RestaurantOps.sln
 
       - name: Build solution
-        run: dotnet build RestaurantProjects/RestaurantOps.sln --configuration Release --no-restore
+        run: dotnet build RestaurantOps.sln --configuration Release --no-restore
 
       - name: Publish web app
-        run: dotnet publish RestaurantProjects/RestaurantOps.Web/RestaurantOps.Web.csproj --configuration Release --output publish --no-build
+        run: dotnet publish RestaurantOps.Web/RestaurantOps.Web.csproj --configuration Release --output publish --no-build
 
       - name: Create deployment zip
         run: |
