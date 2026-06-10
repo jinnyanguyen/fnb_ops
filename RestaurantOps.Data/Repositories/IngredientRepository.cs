@@ -48,4 +48,14 @@ public class IngredientRepository : IIngredientRepository
     {
         _context.SaveChanges();
     }
+
+    /// <summary>
+    /// Retrieves ingredients filtered by branch.
+    /// </summary>
+    public List<Ingredient> GetAllByBranch(int branchId)
+    {
+        return _context.Ingredients
+            .Where(i => i.BranchId == branchId)
+            .ToList();
+    }
 }

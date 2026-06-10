@@ -1,0 +1,94 @@
+@model List<RestaurantOps.Models.SOPExecution>
+
+@{
+    ViewData["Title"] = "My SOP History";
+}
+
+<h2 class="mb-4">
+    My SOP Execution History
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No SOP executions found.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-dark">
+            <tr>
+                <th>SOP</th>
+                <th>Executed At</th>
+                <th>Progress</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        @foreach (var execution in Model)
+        {
+            var totalItems =
+                execution.ExecutionItems.Count;
+
+            var completedItems =
+                execution.ExecutionItems
+                    .Count(i => i.IsCompleted);
+
+            var percentage =
+                totalItems == 0
+                    ? 0
+                    : (completedItems * 100) / totalItems;
+
+            <tr>
+
+                <td>
+                    @execution.SOPTemplate?.Name
+                </td>
+
+                <td>
+                    @execution.ExecutedAt.ToString("g")
+                </td>
+
+                <td>
+
+                    <div class="progress">
+
+                        <div class="progress-bar"
+                             role="progressbar"
+                             style="width: @percentage%">
+
+                            @percentage%
+
+                        </div>
+
+                    </div>
+
+                    <small class="text-muted">
+                        @completedItems / @totalItems completed
+                    </small>
+
+                </td>
+
+                <td>
+
+                    <a asp-action="Execute"
+                       asp-route-id="@execution.SOPExecutionId"
+                       class="btn btn-primary btn-sm">
+
+                        Open
+
+                    </a>
+
+                </td>
+
+            </tr>
+        }
+
+        </tbody>
+
+    </table>
+}

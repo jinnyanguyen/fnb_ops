@@ -1,3 +1,0 @@
-C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\publish\RestaurantOps.Infrastructure.dll
-C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\publish\RestaurantOps.Infrastructure.deps.json
-C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\publish\RestaurantOps.Infrastructure.pdb

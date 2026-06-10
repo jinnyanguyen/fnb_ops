@@ -9,6 +9,11 @@ public interface IRecipeService
 {
     List<Recipe> GetAll();
 
+    /// <summary>
+    /// Retrieves recipes for a specific branch.
+    /// </summary>
+    List<Recipe> GetAll(int branchId);
+
     Recipe? GetById(int id);
 
     void Add(Recipe recipe);
@@ -32,4 +37,14 @@ public interface IRecipeService
     /// Calculates profit margin percentage.
     /// </summary>
     decimal CalculateProfitMargin(int recipeId);
+
+    /// <summary>
+    /// Adds a preparation step to a recipe.
+    /// </summary>
+    void AddStep(RecipeStep step);
+
+    /// <summary>
+    /// Retrieves preparation steps for a recipe.
+    /// </summary>
+    List<RecipeStep> GetSteps(int recipeId);
 }

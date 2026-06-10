@@ -1,67 +1,175 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RestaurantOps.Business.Interfaces;
-using RestaurantOps.Data;
+using RestaurantOps.Data.Interfaces;
 using RestaurantOps.Models;
 
 namespace RestaurantOps.Business.Services;
 
 /// <summary>
-/// Handles business logic for sales.
+/// Handles sale-related business logic.
 /// </summary>
 public class SaleService : ISaleService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ISaleRepository _repository;
+    private readonly IRecipeRepository _recipeRepository;
     private readonly ILogger<SaleService> _logger;
 
     /// <summary>
     /// Constructor with dependency injection.
     /// </summary>
-    public SaleService(ApplicationDbContext context, ILogger<SaleService> logger)
+    public SaleService(
+        ISaleRepository repository,
+        IRecipeRepository recipeRepository,
+        ILogger<SaleService> logger)
     {
-        _context = context;
+        _repository = repository;
+        _recipeRepository = recipeRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Returns all sales records, including related recipe data.
+    /// Retrieves all sales.
     /// </summary>
     public List<Sale> GetAll()
     {
-        _logger.LogInformation("Fetching all sales records");
+        _logger.LogInformation("Fetching all sales");
 
-        return _context.Sales
-            .Include(s => s.Recipe)
-            .OrderByDescending(s => s.SaleDate)
-            .ToList();
+        return _repository.GetAll();
     }
 
     /// <summary>
-    /// Adds a new sale record and calculates total amount automatically.
+    /// Retrieves sales for a specific branch.
     /// </summary>
-    public void Add(Sale sale)
+    public List<Sale> GetAll(int branchId)
     {
-        var recipe = _context.Recipes.FirstOrDefault(r => r.RecipeId == sale.RecipeId);
+        _logger.LogInformation(
+            "Fetching sales for branch ID: {BranchId}",
+            branchId);
+
+        return _repository.GetAllByBranch(branchId);
+    }
+
+    /// <summary>
+    /// Retrieves sale by ID.
+    /// </summary>
+    public Sale? GetById(int id)
+    {
+        return _repository.GetById(id);
+    }
+
+/// <summary>
+/// Adds a new sale.
+/// Automatically calculates TotalAmount
+/// and deducts ingredient inventory.
+/// </summary>
+public void Add(Sale sale)
+{
+    // Load recipe with ingredients
+    var recipe = _recipeRepository.GetById(sale.RecipeId);
+
+    if (recipe == null)
+    {
+        _logger.LogError(
+            "Recipe not found for sale creation.");
+
+        throw new Exception("Recipe not found.");
+    }
+
+    // Auto-assign sale date
+    if (sale.SaleDate == default)
+    {
+        sale.SaleDate = DateTime.Now;
+    }
+
+    // Calculate sale total
+    sale.TotalAmount =
+        recipe.SellingPrice * sale.QuantitySold;
+
+    // ===== INVENTORY DEDUCTION =====
+
+    foreach (var recipeIngredient in recipe.RecipeIngredients)
+    {
+        var ingredient = recipeIngredient.Ingredient;
+
+        if (ingredient == null)
+        {
+            continue;
+        }
+
+        // Total inventory deduction
+        var deductionAmount =
+            recipeIngredient.QuantityRequired *
+            sale.QuantitySold;
+
+        // Prevent negative inventory
+        if (ingredient.QuantityOnHand < deductionAmount)
+        {
+            _logger.LogError(
+                "Insufficient inventory for ingredient: {IngredientName}",
+                ingredient.Name);
+
+            throw new Exception(
+                $"Not enough inventory for {ingredient.Name}");
+        }
+
+        // Deduct inventory
+        ingredient.QuantityOnHand -= deductionAmount;
+
+        _logger.LogInformation(
+            "Deducted {Amount} from ingredient {IngredientName}",
+            deductionAmount,
+            ingredient.Name);
+    }
+
+    // Save sale
+    _repository.Add(sale);
+
+    // Save inventory updates + sale
+    _repository.Save();
+
+    _logger.LogInformation(
+        "Sale created successfully with inventory deduction.");
+}
+
+    /// <summary>
+    /// Updates an existing sale.
+    /// </summary>
+    public void Update(Sale sale)
+    {
+        var recipe = _recipeRepository.GetById(sale.RecipeId);
 
         if (recipe == null)
         {
-            throw new InvalidOperationException("Selected recipe does not exist.");
+            _logger.LogError(
+                "Recipe not found for sale update.");
+
+            throw new Exception("Recipe not found.");
+        }
+        if (sale.SaleDate == default)
+        {
+            sale.SaleDate = DateTime.Now;
         }
 
-        // AUTO SET DATE
-        sale.SaleDate = DateTime.Now;
+        sale.TotalAmount =
+            recipe.SellingPrice * sale.QuantitySold;
 
-        // AUTO CALCULATE TOTAL
-        sale.TotalAmount = sale.QuantitySold * recipe.SellingPrice;
+        _repository.Update(sale);
+        _repository.Save();
 
         _logger.LogInformation(
-            "Adding sale → Recipe: {RecipeId}, Qty: {Qty}, Total: {Total}",
-            sale.RecipeId,
-            sale.QuantitySold,
-            sale.TotalAmount
-        );
+            "Sale updated successfully.");
+    }
 
-        _context.Sales.Add(sale);
-        _context.SaveChanges();
+    /// <summary>
+    /// Deletes a sale by ID.
+    /// </summary>
+    public void Delete(int id)
+    {
+        _repository.Delete(id);
+        _repository.Save();
+
+        _logger.LogWarning(
+            "Sale deleted. ID: {SaleId}",
+            id);
     }
 }

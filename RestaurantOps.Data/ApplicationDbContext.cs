@@ -41,8 +41,27 @@ public class ApplicationDbContext : DbContext
     /// </summary>
     public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
 
-/// <summary>
-/// Task Assignment table
-/// </summary>
+    /// <summary>
+    /// Task Assignment table
+    /// </summary>
     public DbSet<TaskAssignment> TaskAssignments { get; set; }
+
+    /// <summary>
+    /// Branch table
+    /// </summary>
+    public DbSet<Branch> Branches { get; set; }
+
+    public DbSet<SOPTemplate> SOPTemplates { get; set; }
+
+    public DbSet<SOPItem> SOPItems { get; set; }
+
+    public DbSet<SOPExecution> SOPExecutions { get; set; }
+
+    public DbSet<SOPExecutionItem> SOPExecutionItems { get; set; }
+
+    public DbSet<RecipeStep> RecipeSteps { get; set; }
+
+    public DbSet<RecipeExecution> RecipeExecutions { get; set; }
+
+    public DbSet<RecipeExecutionStep> RecipeExecutionSteps { get; set; }
 }

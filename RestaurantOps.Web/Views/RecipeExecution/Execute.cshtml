@@ -1,0 +1,97 @@
+@model RestaurantOps.Models.RecipeExecution
+
+@{
+    ViewData["Title"] = "Recipe Execution";
+}
+
+<h2 class="mb-3">
+
+    @Model.Recipe?.Name
+
+</h2>
+
+<p class="text-muted">
+
+    Started:
+    @Model.StartedAt.ToString("g")
+
+</p>
+
+<hr />
+
+@if (!Model.ExecutionSteps.Any())
+{
+    <div class="alert alert-warning">
+
+        No recipe steps found.
+
+    </div>
+}
+else
+{
+    <ul class="list-group">
+
+        @foreach (var step in Model.ExecutionSteps
+            .OrderBy(s => s.RecipeStep?.StepOrder))
+        {
+            <li class="list-group-item
+                       d-flex
+                       justify-content-between
+                       align-items-center">
+
+                <div>
+
+                    @step.RecipeStep?.Instruction
+
+                    @if (step.IsCompleted
+                   && step.CompletedAt != null)
+                    {
+                        <div class="text-muted small">
+
+                            Completed:
+                            @step.CompletedAt.Value
+                                .ToString("g")
+
+                        </div>
+                    }
+
+                </div>
+
+                @if (step.IsCompleted)
+                {
+                    <span class="badge bg-success">
+
+                        Completed
+
+                    </span>
+                }
+                else
+                {
+                    <form asp-action="CompleteStep"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="executionStepId"
+                               value="@step.RecipeExecutionStepId" />
+
+                        <input type="hidden"
+                               name="executionId"
+                               value="@Model.RecipeExecutionId" />
+
+                        <button type="submit"
+                                class="btn btn-primary btn-sm">
+
+                            Complete Step
+
+                        </button>
+
+                    </form>
+                }
+
+            </li>
+        }
+
+    </ul>
+}

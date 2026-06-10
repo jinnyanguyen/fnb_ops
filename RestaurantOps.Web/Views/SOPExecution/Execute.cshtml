@@ -1,0 +1,75 @@
+@model RestaurantOps.Models.SOPExecution
+
+@{
+    ViewData["Title"] = "Execute SOP";
+}
+
+<h2 class="mb-3">
+    @Model.SOPTemplate?.Name
+</h2>
+
+<p class="text-muted">
+    Started: @Model.ExecutedAt.ToString("g")
+</p>
+
+<hr />
+
+@if (!Model.ExecutionItems.Any())
+{
+    <div class="alert alert-warning">
+        This SOP has no checklist items.
+    </div>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var item in Model.ExecutionItems
+            .OrderBy(i => i.SOPItem?.SortOrder))
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                <div>
+                    @item.SOPItem?.Instruction
+
+                    @if (item.IsCompleted && item.CompletedAt != null)
+                    {
+                        <div class="text-muted small">
+                            Completed: @item.CompletedAt.Value.ToString("g")
+                        </div>
+                    }
+                </div>
+
+                @if (item.IsCompleted)
+                {
+                    <span class="badge bg-success">
+                        Completed
+                    </span>
+                }
+                else
+                {
+                    <form asp-action="CompleteItem" method="post">
+                        <input type="hidden"
+                               name="executionItemId"
+                               value="@item.SOPExecutionItemId" />
+
+                        <input type="hidden"
+                               name="executionId"
+                               value="@Model.SOPExecutionId" />
+
+                        <button type="submit"
+                                class="btn btn-primary btn-sm">
+                            Mark Complete
+                        </button>
+                    </form>
+                }
+            </li>
+        }
+    </ul>
+}
+
+<div class="mt-4">
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Back to SOP List
+    </a>
+</div>

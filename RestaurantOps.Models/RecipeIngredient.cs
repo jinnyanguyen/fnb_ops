@@ -23,4 +23,5 @@ public class RecipeIngredient
     // Navigation properties
     public Recipe? Recipe { get; set; }
     public Ingredient? Ingredient { get; set; }
+    public decimal QuantityRequired { get; set; }
 }

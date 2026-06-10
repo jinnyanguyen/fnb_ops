@@ -22,6 +22,31 @@ namespace RestaurantOps.Data.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
+            modelBuilder.Entity("RestaurantOps.Models.Branch", b =>
+                {
+                    b.Property<int>("BranchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("BranchId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("BranchId");
+
+                    b.ToTable("Branches");
+                });
+
             modelBuilder.Entity("RestaurantOps.Models.Ingredient", b =>
                 {
                     b.Property<int>("IngredientId")
@@ -29,6 +54,9 @@ namespace RestaurantOps.Data.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("IngredientId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("CostPerUnit")
                         .HasColumnType("decimal(10,2)");
@@ -46,9 +74,12 @@ namespace RestaurantOps.Data.Migrations
 
                     b.Property<string>("Unit")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("IngredientId");
+
+                    b.HasIndex("BranchId");
 
                     b.ToTable("Ingredients");
                 });
@@ -61,20 +92,94 @@ namespace RestaurantOps.Data.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("RecipeId"));
 
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Instructions")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<int>("PrepTimeMinutes")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("SellingPrice")
-                        .HasColumnType("decimal(65,30)");
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("RecipeId");
 
+                    b.HasIndex("BranchId");
+
                     b.ToTable("Recipes");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.RecipeExecution", b =>
+                {
+                    b.Property<int>("RecipeExecutionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("RecipeExecutionId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RecipeExecutionId");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RecipeExecutions");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.RecipeExecutionStep", b =>
+                {
+                    b.Property<int>("RecipeExecutionStepId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("RecipeExecutionStepId"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("RecipeExecutionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RecipeStepId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RecipeExecutionStepId");
+
+                    b.HasIndex("RecipeExecutionId");
+
+                    b.HasIndex("RecipeStepId");
+
+                    b.ToTable("RecipeExecutionSteps");
                 });
 
             modelBuilder.Entity("RestaurantOps.Models.RecipeIngredient", b =>
@@ -91,6 +196,9 @@ namespace RestaurantOps.Data.Migrations
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(65,30)");
 
+                    b.Property<decimal>("QuantityRequired")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<int>("RecipeId")
                         .HasColumnType("int");
 
@@ -103,6 +211,145 @@ namespace RestaurantOps.Data.Migrations
                     b.ToTable("RecipeIngredients");
                 });
 
+            modelBuilder.Entity("RestaurantOps.Models.RecipeStep", b =>
+                {
+                    b.Property<int>("RecipeStepId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("RecipeStepId"));
+
+                    b.Property<string>("Instruction")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("RecipeStepId");
+
+                    b.HasIndex("RecipeId");
+
+                    b.ToTable("RecipeSteps");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPExecution", b =>
+                {
+                    b.Property<int>("SOPExecutionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SOPExecutionId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExecutedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("SOPTemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SOPExecutionId");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("SOPTemplateId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SOPExecutions");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPExecutionItem", b =>
+                {
+                    b.Property<int>("SOPExecutionItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SOPExecutionItemId"));
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("SOPExecutionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SOPItemId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SOPExecutionItemId");
+
+                    b.HasIndex("SOPExecutionId");
+
+                    b.HasIndex("SOPItemId");
+
+                    b.ToTable("SOPExecutionItems");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPItem", b =>
+                {
+                    b.Property<int>("SOPItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SOPItemId"));
+
+                    b.Property<string>("Instruction")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<int>("SOPTemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("SOPItemId");
+
+                    b.HasIndex("SOPTemplateId");
+
+                    b.ToTable("SOPItems");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPTemplate", b =>
+                {
+                    b.Property<int>("SOPTemplateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SOPTemplateId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("SOPTemplateId");
+
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("SOPTemplates");
+                });
+
             modelBuilder.Entity("RestaurantOps.Models.Sale", b =>
                 {
                     b.Property<int>("SaleId")
@@ -110,6 +357,9 @@ namespace RestaurantOps.Data.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("SaleId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
 
                     b.Property<int>("QuantitySold")
                         .HasColumnType("int");
@@ -125,6 +375,10 @@ namespace RestaurantOps.Data.Migrations
 
                     b.HasKey("SaleId");
 
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("RecipeId");
+
                     b.ToTable("Sales");
                 });
 
@@ -135,6 +389,12 @@ namespace RestaurantOps.Data.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("TaskAssignmentId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -157,6 +417,8 @@ namespace RestaurantOps.Data.Migrations
 
                     b.HasKey("TaskAssignmentId");
 
+                    b.HasIndex("BranchId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("TaskAssignments");
@@ -169,6 +431,12 @@ namespace RestaurantOps.Data.Migrations
                         .HasColumnType("int");
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -192,13 +460,83 @@ namespace RestaurantOps.Data.Migrations
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("BranchId");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.Ingredient", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany("Ingredients")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.Recipe", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany("Recipes")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.RecipeExecution", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.Recipe", "Recipe")
+                        .WithMany()
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Recipe");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.RecipeExecutionStep", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.RecipeExecution", "RecipeExecution")
+                        .WithMany("ExecutionSteps")
+                        .HasForeignKey("RecipeExecutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.RecipeStep", "RecipeStep")
+                        .WithMany()
+                        .HasForeignKey("RecipeStepId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RecipeExecution");
+
+                    b.Navigation("RecipeStep");
                 });
 
             modelBuilder.Entity("RestaurantOps.Models.RecipeIngredient", b =>
                 {
                     b.HasOne("RestaurantOps.Models.Ingredient", "Ingredient")
-                        .WithMany()
+                        .WithMany("RecipeIngredients")
                         .HasForeignKey("IngredientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -214,20 +552,168 @@ namespace RestaurantOps.Data.Migrations
                     b.Navigation("Recipe");
                 });
 
-            modelBuilder.Entity("RestaurantOps.Models.TaskAssignment", b =>
+            modelBuilder.Entity("RestaurantOps.Models.RecipeStep", b =>
                 {
+                    b.HasOne("RestaurantOps.Models.Recipe", "Recipe")
+                        .WithMany("RecipeSteps")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPExecution", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.SOPTemplate", "SOPTemplate")
+                        .WithMany()
+                        .HasForeignKey("SOPTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("RestaurantOps.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Branch");
+
+                    b.Navigation("SOPTemplate");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPExecutionItem", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.SOPExecution", "SOPExecution")
+                        .WithMany("ExecutionItems")
+                        .HasForeignKey("SOPExecutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.SOPItem", "SOPItem")
+                        .WithMany()
+                        .HasForeignKey("SOPItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SOPExecution");
+
+                    b.Navigation("SOPItem");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPItem", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.SOPTemplate", "SOPTemplate")
+                        .WithMany("SOPItems")
+                        .HasForeignKey("SOPTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SOPTemplate");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPTemplate", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.Sale", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.Recipe", "Recipe")
+                        .WithMany()
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Recipe");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.TaskAssignment", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RestaurantOps.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.User", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
+                        .WithMany("Users")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.Branch", b =>
+                {
+                    b.Navigation("Ingredients");
+
+                    b.Navigation("Recipes");
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.Ingredient", b =>
+                {
+                    b.Navigation("RecipeIngredients");
                 });
 
             modelBuilder.Entity("RestaurantOps.Models.Recipe", b =>
                 {
                     b.Navigation("RecipeIngredients");
+
+                    b.Navigation("RecipeSteps");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.RecipeExecution", b =>
+                {
+                    b.Navigation("ExecutionSteps");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPExecution", b =>
+                {
+                    b.Navigation("ExecutionItems");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.SOPTemplate", b =>
+                {
+                    b.Navigation("SOPItems");
                 });
 #pragma warning restore 612, 618
         }

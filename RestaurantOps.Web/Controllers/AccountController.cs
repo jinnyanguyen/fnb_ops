@@ -1,34 +1,36 @@
 using Microsoft.AspNetCore.Mvc;
-using RestaurantOps.Data;
-using RestaurantOps.Models;
-using RestaurantOps.Business.Helpers;
-using Microsoft.EntityFrameworkCore;
+using RestaurantOps.Business.Interfaces;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using RestaurantOps.Models;
 
 namespace RestaurantOps.Web.Controllers;
 
 /// <summary>
 /// Handles user authentication (login/logout).
+/// Responsible only for HTTP handling and delegating logic to services.
 /// </summary>
 public class AccountController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IAuthService _authService;
 
-    public AccountController(ApplicationDbContext context)
+    /// <summary>
+    /// Constructor with dependency injection of authentication service.
+    /// </summary>
+    public AccountController(IAuthService authService)
     {
-        _context = context;
+        _authService = authService;
     }
 
     /// <summary>
-    /// Displays login page
+    /// Displays login page.
+    /// If user is already authenticated, redirect based on role.
     /// </summary>
     public IActionResult Login()
     {
         if (User.Identity != null && User.Identity.IsAuthenticated)
         {
-            // Redirect based on role
             if (User.IsInRole("Manager"))
                 return RedirectToAction("Index", "Dashboard");
 
@@ -40,7 +42,8 @@ public class AccountController : Controller
     }
 
     /// <summary>
-    /// Handles login form submission
+    /// Handles login form submission.
+    /// Validates user credentials and signs them in using cookie authentication.
     /// </summary>
     [HttpPost]
     public async Task<IActionResult> Login(LoginViewModel model)
@@ -48,12 +51,8 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        // Hash the entered password
-        var hashedPassword = PasswordHelper.HashPassword(model.Password);
-
-        // Find matching user
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Email == model.Email && u.PasswordHash == hashedPassword);
+        //  Delegate authentication logic to service layer
+        var user = _authService.ValidateUser(model.Email, model.Password);
 
         if (user == null)
         {
@@ -61,35 +60,51 @@ public class AccountController : Controller
             return View(model);
         }
 
-        // Create claims
+        //  Create claims (identity + authorization + branch context)
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
             new Claim(ClaimTypes.Name, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim("BranchId", user.BranchId.ToString())
         };
 
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var claimsIdentity = new ClaimsIdentity(
+            claims,
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
+
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
         // Sign in user
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity)
+            claimsPrincipal
         );
 
-        // Redirect based on role
+        // Role-based redirection
         if (user.Role == "Manager")
-            return RedirectToAction("Index", "Ingredient");
+            return RedirectToAction("Index", "Dashboard");
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("MyTasks", "Task");
     }
 
     /// <summary>
-    /// Logs out user
+    /// Logs out the currently authenticated user.
+    /// Clears authentication cookie.
     /// </summary>
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync();
         return RedirectToAction("Login");
+    }
+
+    /// <summary>
+    /// Displays access denied page when user lacks permission.
+    /// </summary>
+    public IActionResult AccessDenied()
+    {
+        return View();
     }
 
 

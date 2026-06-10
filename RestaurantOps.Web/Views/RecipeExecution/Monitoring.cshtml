@@ -1,0 +1,158 @@
+@model List<RestaurantOps.Models.RecipeExecution>
+
+@{
+    ViewData["Title"] = "Kitchen Monitoring";
+}
+
+<h2 class="mb-4">
+    Kitchen Monitoring Dashboard
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No kitchen executions found.
+    </div>
+}
+else
+{
+    @foreach (var execution in Model)
+    {
+        var total =
+            execution.ExecutionSteps.Count;
+
+        var completed =
+            execution.ExecutionSteps
+                .Count(s => s.IsCompleted);
+
+        var percentage =
+            total == 0
+                ? 0
+                : (completed * 100) / total;
+
+        <div class="card mb-4 shadow-sm">
+
+            <div class="card-header bg-dark text-white">
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+
+                        <strong>
+                            @execution.Recipe?.Name
+                        </strong>
+
+                        <br />
+
+                        <small>
+                            Staff:
+                            @execution.User?.FirstName @execution.User?.LastName </small>
+
+                        </div>
+
+                        <div class="text-end">
+
+                            <small>
+                                Started:
+                                @execution.StartedAt.ToString("g")
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <!-- Progress -->
+                    <div class="mb-3">
+
+                        <div class="progress">
+
+                            <div class="progress-bar" role="progressbar" style="width: @percentage%">
+
+                                @percentage%
+
+                            </div>
+
+                        </div>
+
+                        <small class="text-muted">
+                            @completed / @total steps completed
+                        </small>
+
+                    </div>
+
+                    <!-- Recipe Steps -->
+                    @if (!execution.ExecutionSteps.Any())
+                    {
+                        <div class="alert alert-warning">
+
+                            No recipe steps found.
+
+                        </div>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+
+                            @foreach (var step in execution.ExecutionSteps
+                                .OrderBy(s => s.RecipeStep?.StepOrder))
+                            {
+                                <li class="list-group-item
+                                    d-flex
+                                    justify-content-between
+                                    align-items-center">
+
+                                    <div>
+
+                                        <strong>
+                                            Step
+                                            @step.RecipeStep?.StepOrder:
+                                        </strong>
+
+                                        @step.RecipeStep?.Instruction
+
+                                        @if (step.IsCompleted
+                                       && step.CompletedAt != null)
+                                        {
+                                            <div class="text-muted small">
+
+                                                Completed:
+                                                @step.CompletedAt.Value
+                                                .ToString("g")
+
+                                            </div>
+                                        }
+
+                                    </div>
+
+                                    @if (step.IsCompleted)
+                                    {
+                                        <span class="badge bg-success">
+
+                                            Completed
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">
+
+                                            Pending
+
+                                        </span>
+                                    }
+
+                                </li>
+                            }
+
+                        </ul>
+                    }
+
+                </div>
+
+            </div>
+        }
+    }

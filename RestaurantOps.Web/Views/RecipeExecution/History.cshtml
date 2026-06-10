@@ -1,0 +1,97 @@
+@model List<RestaurantOps.Models.RecipeExecution>
+
+@{
+    ViewData["Title"] = "My Recipe Executions";
+}
+
+<h2 class="mb-4">
+    My Recipe Execution History
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No recipe executions found.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Recipe</th>
+                <th>Started</th>
+                <th>Progress</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        @foreach (var execution in Model)
+        {
+            var total =
+                execution.ExecutionSteps.Count;
+
+            var completed =
+                execution.ExecutionSteps
+                    .Count(s => s.IsCompleted);
+
+            var percentage =
+                total == 0
+                    ? 0
+                    : (completed * 100) / total;
+
+            <tr>
+
+                <td>
+                    @execution.Recipe?.Name
+                </td>
+
+                <td>
+                    @execution.StartedAt.ToString("g")
+                </td>
+
+                <td>
+
+                    <div class="progress">
+
+                        <div class="progress-bar"
+                             style="width: @percentage%">
+
+                            @percentage%
+
+                        </div>
+
+                    </div>
+
+                    <small class="text-muted">
+
+                        @completed / @total completed
+
+                    </small>
+
+                </td>
+
+                <td>
+
+                    <a asp-action="Execute"
+                       asp-route-id="@execution.RecipeExecutionId"
+                       class="btn btn-primary btn-sm">
+
+                        Open
+
+                    </a>
+
+                </td>
+
+            </tr>
+        }
+
+        </tbody>
+
+    </table>
+}

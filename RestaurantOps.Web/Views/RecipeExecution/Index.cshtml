@@ -1,0 +1,91 @@
+@model List<RestaurantOps.Models.Recipe>
+
+@{
+    ViewData["Title"] = "Kitchen Recipe Execution";
+}
+
+<h2 class="mb-4">
+    Kitchen Recipe Execution
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No recipes available for this branch.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Recipe</th>
+                <th>Category</th>
+                <th>Preparation Steps</th>
+                <th>Action</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+        @foreach (var recipe in Model)
+        {
+            <tr>
+
+                <td>
+                    @recipe.Name
+                </td>
+
+                <td>
+                    @recipe.Category
+                </td>
+
+                <td>
+
+                    @if (recipe.RecipeSteps.Any())
+                    {
+                        <span class="badge bg-success">
+                            @recipe.RecipeSteps.Count Steps
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">
+                            No Steps
+                        </span>
+                    }
+
+                </td>
+
+                <td>
+
+                    <form asp-action="Start"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               name="recipeId"
+                               value="@recipe.RecipeId" />
+
+                        <button type="submit"
+                                class="btn btn-success btn-sm">
+
+                            Start Cooking
+
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+        }
+
+        </tbody>
+
+    </table>
+}

@@ -1,3 +1,0 @@
-C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\publish\RestaurantOps.Models.dll
-C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\publish\RestaurantOps.Models.deps.json
-C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\publish\RestaurantOps.Models.pdb

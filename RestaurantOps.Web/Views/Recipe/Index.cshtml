@@ -1,31 +1,131 @@
-@model IEnumerable<RestaurantOps.Models.Recipe>
+@model List<RestaurantOps.Models.Recipe>
+
+@{
+    ViewData["Title"] = "Recipes";
+}
 
 <div class="container mt-4">
 
-    <h2>Recipes</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-    <a href="/Recipe/Create" class="btn btn-primary">Create Recipe</a>
+        <h2>Recipes</h2>
 
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
+        <a asp-action="Create"
+           class="btn btn-primary">
+            Add Recipe
+        </a>
+
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            No recipes found for this branch.
+        </div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>Recipe Name</th>
+                    <th>Category</th>
+                    <th>Selling Price</th>
+                    <th>Prep Time</th>
+                    <th>Preparation Steps</th>
+                    <th>Actions</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            @foreach (var recipe in Model)
             {
                 <tr>
-                    <td>@item.Name</td>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@item.RecipeId" class="btn btn-info btn-sm">View</a>
 
-                        <a asp-action="Edit" asp-route-id="@item.RecipeId" class="btn btn-warning btn-sm">Edit</a>
+                    <!-- Recipe Name -->
+                    <td>
+                        <a asp-action="Details"
+                           asp-route-id="@recipe.RecipeId"
+                           class="fw-bold text-decoration-none">
+
+                            @recipe.Name
+
+                        </a>
                     </td>
+
+                    <!-- Category -->
+                    <td>
+                        @recipe.Category
+                    </td>
+
+                    <!-- Selling Price -->
+                    <td>
+                        $@recipe.SellingPrice.ToString("0.00")
+                    </td>
+
+                    <!-- Preparation Time -->
+                    <td>
+                        @recipe.PrepTimeMinutes mins
+                    </td>
+
+                    <!-- Step Count -->
+                    <td>
+
+                        @if (recipe.RecipeSteps != null
+                       && recipe.RecipeSteps.Any())
+                        {
+                            <span class="badge bg-success">
+                                @recipe.RecipeSteps.Count Steps
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">
+                                No Steps
+                            </span>
+                        }
+
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+
+                        <a asp-action="Details"
+                           asp-route-id="@recipe.RecipeId"
+                           class="btn btn-info btn-sm">
+
+                            Manage Steps
+
+                        </a>
+
+                        <a asp-action="Edit"
+                           asp-route-id="@recipe.RecipeId"
+                           class="btn btn-warning btn-sm">
+
+                            Edit
+
+                        </a>
+
+                        <a asp-action="Delete"
+                           asp-route-id="@recipe.RecipeId"
+                           class="btn btn-danger btn-sm">
+
+                            Delete
+
+                        </a>
+
+                    </td>
+
                 </tr>
             }
-        </tbody>
-    </table>
+
+            </tbody>
+
+        </table>
+    }
 
 </div>

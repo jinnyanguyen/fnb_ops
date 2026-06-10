@@ -1,0 +1,86 @@
+@model List<RestaurantOps.Models.SOPExecution>
+
+@{
+    ViewData["Title"] = "SOP Execution Monitoring";
+}
+
+<h2 class="mb-4">
+    SOP Execution Monitoring
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No SOP executions found.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-dark">
+            <tr>
+                <th>SOP</th>
+                <th>Staff</th>
+                <th>Executed At</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+        @foreach (var execution in Model)
+        {
+            var totalItems =
+                execution.ExecutionItems.Count;
+
+            var completedItems =
+                execution.ExecutionItems
+                    .Count(i => i.IsCompleted);
+
+            var percentage =
+                totalItems == 0
+                    ? 0
+                    : (completedItems * 100) / totalItems;
+
+            <tr>
+
+                <td>
+                    @execution.SOPTemplate?.Name
+                </td>
+
+                <td>
+                    @execution.User?.FullName
+                </td>
+
+                <td>
+                    @execution.ExecutedAt.ToString("g")
+                </td>
+
+                <td>
+
+                    <div class="progress">
+
+                        <div class="progress-bar"
+                             role="progressbar"
+                             style="width: @percentage%">
+
+                            @percentage%
+
+                        </div>
+
+                    </div>
+
+                    <small class="text-muted">
+                        @completedItems / @totalItems completed
+                    </small>
+
+                </td>
+
+            </tr>
+        }
+
+        </tbody>
+
+    </table>
+}

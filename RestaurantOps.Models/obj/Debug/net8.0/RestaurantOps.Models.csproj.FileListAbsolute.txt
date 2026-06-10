@@ -1,0 +1,12 @@
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\bin\Debug\net8.0\RestaurantOps.Models.deps.json
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\bin\Debug\net8.0\RestaurantOps.Models.dll
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\bin\Debug\net8.0\RestaurantOps.Models.pdb
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.AssemblyInfoInputs.cache
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.AssemblyInfo.cs
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.csproj.CoreCompileInputs.cache
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.sourcelink.json
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.dll
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\refint\RestaurantOps.Models.dll
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\RestaurantOps.Models.pdb
+C:\Users\Admin\OneDrive - Kinderworld Vietnam JSC\Desktop\RestaurantProjects\RestaurantOps.Models\obj\Debug\net8.0\ref\RestaurantOps.Models.dll

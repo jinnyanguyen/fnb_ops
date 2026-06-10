@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RestaurantOps.Models;
 
@@ -39,4 +40,10 @@ public class Sale
     /// Navigation property to the related recipe.
     /// </summary>
     public Recipe? Recipe { get; set; }
+
+    [Required]
+    public int BranchId { get; set; }
+
+    [ForeignKey(nameof(BranchId))]
+    public Branch? Branch { get; set; }
 }

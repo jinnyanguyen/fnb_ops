@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RestaurantOps.Models;
 
@@ -44,4 +45,28 @@ public class User
     /// </summary>
     [Required]
     public string Role { get; set; } = "Staff";
+
+    /// <summary>
+    /// Foreign key to the branch this user belongs to.
+    /// </summary>
+    [Required]
+    public int BranchId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the user's branch.
+    /// </summary>
+    [ForeignKey(nameof(BranchId))]
+    public Branch? Branch { get; set; }
+
+    /// <summary>
+    /// Convenience property for displaying the user's full name in UI views.
+    /// </summary>
+    [NotMapped]
+    public string FullName => $"{FirstName} {LastName}";
+
+    /// <summary>
+    /// Date user account was created.
+    /// </summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
+

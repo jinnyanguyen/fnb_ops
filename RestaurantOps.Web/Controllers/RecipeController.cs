@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RestaurantOps.Business.Helpers;
 using RestaurantOps.Business.Interfaces;
 using RestaurantOps.Business.Services;
 using RestaurantOps.Models;
@@ -25,12 +26,43 @@ public class RecipeController : Controller
     }
 
     /// <summary>
-    /// Displays all recipes.
+    /// Displays recipes for the logged-in user's branch.
     /// </summary>
     public IActionResult Index()
     {
-        var recipes = _recipeService.GetAll();
+        var branchIdClaim = User.FindFirst("BranchId")?.Value;
+
+        if (string.IsNullOrEmpty(branchIdClaim))
+        {
+            return Unauthorized();
+        }
+
+        int branchId = int.Parse(branchIdClaim);
+
+        var recipes = _recipeService.GetAll(branchId);
+
         return View(recipes);
+    }
+
+    /// <summary>
+    /// Adds a preparation step to a recipe.
+    /// </summary>
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult AddStep(RecipeStep step)
+    {
+        if (!ModelState.IsValid)
+        {
+            return RedirectToAction(
+                nameof(Details),
+                new { id = step.RecipeId });
+        }
+
+        _recipeService.AddStep(step);
+
+        return RedirectToAction(
+            nameof(Details),
+            new { id = step.RecipeId });
     }
 
     /// <summary>
@@ -38,52 +70,54 @@ public class RecipeController : Controller
     /// </summary>
     public IActionResult Create()
     {
-        ViewBag.Ingredients = _ingredientService.GetAll();
-        return View();
+        int branchId = BranchHelper.GetBranchId(User);
+
+        ViewBag.Ingredients = _ingredientService.GetAll(branchId); return View();
     }
 
     /// <summary>
     /// Handles recipe creation.
     /// </summary>
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Create(Recipe recipe)
     {
-        if (ModelState.IsValid)
-        {
-            _recipeService.Add(recipe);
-            return RedirectToAction("Index");
-        }
+        if (!ModelState.IsValid)
+            return View(recipe);
 
-        // Re-populate dropdown if validation fails
-        ViewBag.Ingredients = _ingredientService.GetAll();
+        recipe.BranchId = int.Parse(
+            User.FindFirst("BranchId")!.Value);
 
-        return View(recipe);
+        _recipeService.Add(recipe);
+
+        return RedirectToAction(nameof(Index));
     }
 
     /// <summary>
-/// Displays recipe details along with cost and profit analysis.
-/// </summary>
-public IActionResult Details(int id)
-{
-    var recipe = _recipeService.GetById(id);
+    /// Displays recipe details along with cost and profit analysis.
+    /// </summary>
+    public IActionResult Details(int id)
+    {
+        var recipe = _recipeService.GetById(id);
 
-    if (recipe == null)
-        return NotFound();
-    var cost = _recipeService.CalculateRecipeCost(id);
-    var profit = _recipeService.CalculateProfit(id);
-    var margin = _recipeService.CalculateProfitMargin(id);
+        if (recipe == null)
+            return NotFound();
+        var cost = _recipeService.CalculateRecipeCost(id);
+        var profit = _recipeService.CalculateProfit(id);
+        var margin = _recipeService.CalculateProfitMargin(id);
 
-    Console.WriteLine($"Debug cost: {cost}");
-    Console.WriteLine($"Debug profit: {profit}");
-    Console.WriteLine($"Debug margin: {margin}");
+        Console.WriteLine($"Debug cost: {cost}");
+        Console.WriteLine($"Debug profit: {profit}");
+        Console.WriteLine($"Debug margin: {margin}");
 
-    ViewBag.Cost = cost;
-    ViewBag.Profit = profit;
-    ViewBag.Margin = margin;
+        ViewBag.Cost = cost;
+        ViewBag.Profit = profit;
+        ViewBag.Margin = margin;
 
-    ViewBag.Ingredients = _ingredientService.GetAll();
-    return View(recipe);
-}
+        int branchId = BranchHelper.GetBranchId(User);
+
+        ViewBag.Ingredients = _ingredientService.GetAll(branchId); return View(recipe);
+    }
 
     /// <summary>
     /// Adds ingredient to recipe.

@@ -4,7 +4,7 @@ using System.Text;
 namespace RestaurantOps.Business.Helpers;
 
 /// <summary>
-/// Provides helper methods for hashing passwords.
+/// Provides password hashing and verification functionality.
 /// </summary>
 public static class PasswordHelper
 {
@@ -19,5 +19,14 @@ public static class PasswordHelper
         var hash = sha256.ComputeHash(bytes);
 
         return Convert.ToBase64String(hash);
+    }
+
+    /// <summary>
+    /// Verifies if an input password matches the stored hash.
+    /// </summary>
+    public static bool VerifyPassword(string inputPassword, string storedHash)
+    {
+        var inputHash = HashPassword(inputPassword);
+        return inputHash == storedHash;
     }
 }

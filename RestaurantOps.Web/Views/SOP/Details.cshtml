@@ -1,0 +1,83 @@
+@model RestaurantOps.Models.SOPTemplate
+
+@{
+    ViewData["Title"] = "SOP Details";
+}
+
+<h2 class="mb-4">@Model.Name</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.Description))
+{
+    <div class="alert alert-info">
+        @Model.Description
+    </div>
+}
+
+<hr />
+
+<h4>Add Checklist Item</h4>
+
+<form asp-action="AddItem" method="post">
+
+    <input type="hidden"
+           name="SOPTemplateId"
+           value="@Model.SOPTemplateId" />
+
+    <div class="mb-3">
+        <label class="form-label">
+            Instruction
+        </label>
+
+        <input name="Instruction"
+               class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">
+            Sort Order
+        </label>
+
+        <input name="SortOrder"
+               type="number"
+               class="form-control"
+               value="1" />
+    </div>
+
+    <button type="submit"
+            class="btn btn-success">
+        Add Item
+    </button>
+
+</form>
+
+<hr />
+
+<h4>Checklist Items</h4>
+
+@if (!Model.SOPItems.Any())
+{
+    <div class="alert alert-warning">
+        No checklist items added yet.
+    </div>
+}
+else
+{
+    <ol class="list-group list-group-numbered">
+
+        @foreach (var item in Model.SOPItems
+            .OrderBy(i => i.SortOrder))
+        {
+            <li class="list-group-item">
+                @item.Instruction
+            </li>
+        }
+
+    </ol>
+}
+
+<div class="mt-4">
+    <a asp-action="Index"
+       class="btn btn-secondary">
+        Back to SOP List
+    </a>
+</div>

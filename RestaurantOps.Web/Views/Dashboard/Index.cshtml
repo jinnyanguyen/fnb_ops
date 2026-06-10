@@ -9,28 +9,76 @@
 <!-- ========================= -->
 <div class="row mb-4">
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card text-white bg-primary p-3">
             <h5>Total Recipes</h5>
             <h2>@ViewBag.TotalRecipes</h2>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card text-white bg-success p-3">
             <h5>Total Ingredients</h5>
             <h2>@ViewBag.TotalIngredients</h2>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card text-white bg-warning p-3">
             <h5>Total Sales</h5>
             <h2>$@ViewBag.TotalSales</h2>
         </div>
     </div>
 
+    <div class="col-md-3">
+        <div class="card text-white bg-danger p-3">
+            <h5>Low Stock Items</h5>
+            <h2>@ViewBag.LowStockCount</h2>
+        </div>
+    </div>
+
 </div>
+
+<!-- ========================= -->
+<!-- LOW STOCK ALERTS -->
+<!-- ========================= -->
+<h3>Low Stock Alerts</h3>
+
+@if (ViewBag.LowStockIngredients == null || ViewBag.LowStockIngredients.Count == 0)
+{
+    <div class="alert alert-success">
+        All ingredients are currently above reorder level.
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        The following ingredients are at or below reorder level.
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Ingredient</th>
+                <th>Quantity On Hand</th>
+                <th>Reorder Level</th>
+                <th>Unit</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        @foreach (var ingredient in ViewBag.LowStockIngredients)
+        {
+            <tr>
+                <td>@ingredient.Name</td>
+                <td>@ingredient.QuantityOnHand.ToString("0.##")</td>
+                <td>@ingredient.ReorderLevel.ToString("0.##")</td>
+                <td>@ingredient.Unit</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
 
 <hr />
 
@@ -44,20 +92,14 @@
     <p style="color:red;">⚠️ No sales data available</p>
 }
 
-<!-- CHART -->
 <canvas id="salesChart" height="100"></canvas>
 
-<!-- ========================= -->
-<!-- CHART.JS -->
-<!-- ========================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-    // Default empty arrays (prevents crash)
     var labels = [];
     var data = [];
 
-    // Inject data safely from Razor
     @if (ViewBag.SalesDates != null && ViewBag.SalesTotals != null)
     {
         <text>
@@ -66,10 +108,8 @@
         </text>
     }
 
-    // Get canvas context
     var ctx = document.getElementById('salesChart').getContext('2d');
 
-    // Create chart
     var salesChart = new Chart(ctx, {
         type: 'line',
         data: {

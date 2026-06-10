@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RestaurantOps.Business\RestaurantOps.Business.csproj" />
     <ProjectReference Include="..\RestaurantOps.Data\RestaurantOps.Data.csproj" />
+    <ProjectReference Include="..\RestaurantOps.Models\RestaurantOps.Models.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -13,7 +14,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

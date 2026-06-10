@@ -6,6 +6,7 @@ using RestaurantOps.Business.Interfaces;
 using RestaurantOps.Business.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Register DbContext (Database)
@@ -17,12 +18,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register Repository (DAO Layer)
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ISOPRepository, SOPRepository>();
 
 // Register Service (Business Layer)
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ISaleService, SaleService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISOPService, SOPService>();
+builder.Services.AddScoped<ISOPExecutionService,SOPExecutionService>();
+builder.Services.AddScoped<IRecipeExecutionService,RecipeExecutionService>();
+
+Console.WriteLine("IAuthService Registered Successfully");
 
 // Add MVC
 builder.Services.AddControllersWithViews();
@@ -32,6 +43,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
 var app = builder.Build();

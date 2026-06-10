@@ -1,0 +1,72 @@
+@model List<RestaurantOps.Models.SOPTemplate>
+
+@{
+    ViewData["Title"] = "SOP Templates";
+}
+
+<h2 class="mb-4">SOP Templates</h2>
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-primary">
+        Create SOP Template
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No SOP templates found for this branch.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Checklist Items</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var sop in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@sop.SOPTemplateId">
+                            @sop.Name
+                        </a>
+                    </td>
+
+                    <td>
+                        @(string.IsNullOrWhiteSpace(sop.Description)
+                            ? "-"
+                            : sop.Description)
+                    </td>
+
+                    <td>
+                        @if (sop.SOPItems.Any())
+                        {
+                            <ul class="mb-0">
+                                @foreach (var item in sop.SOPItems
+                                    .OrderBy(i => i.SortOrder))
+                                {
+                                    <li>
+                                        @item.Instruction
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-muted">
+                                No checklist items yet
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

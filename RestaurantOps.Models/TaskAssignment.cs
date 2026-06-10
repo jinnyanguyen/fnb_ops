@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RestaurantOps.Models;
 
@@ -37,6 +38,22 @@ public class TaskAssignment
     public string Status { get; set; } = "Pending";
 
     /// <summary>
+    /// Timestamp when task was completed.
+    /// Null if task is not completed.
+    /// </summary>
+    public DateTime? CompletedAt { get; set; }
+
+    /// <summary>
+    /// Indicates whether the task is overdue.
+    /// Computed dynamically from DueDate and Status.
+    /// Not stored in database.
+    /// </summary>
+    [NotMapped]
+    public bool IsOverdue =>
+        Status != "Completed" &&
+        DueDate < DateTime.Now;
+
+    /// <summary>
     /// User assigned to the task
     /// </summary>
     public int UserId { get; set; }
@@ -45,4 +62,10 @@ public class TaskAssignment
     /// Navigation property to User
     /// </summary>
     public User? User { get; set; }
+
+    [Required]
+    public int BranchId { get; set; }
+
+    [ForeignKey(nameof(BranchId))]
+    public Branch? Branch { get; set; }
 }

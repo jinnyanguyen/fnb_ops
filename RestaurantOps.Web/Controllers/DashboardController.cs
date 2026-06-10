@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantOps.Business.Interfaces;
-using RestaurantOps.Business.Services;
 
 namespace RestaurantOps.Web.Controllers;
 
 /// <summary>
 /// Handles dashboard display for managers.
+/// Displays branch-specific operational metrics.
 /// </summary>
 [Authorize(Roles = "Manager")]
 public class DashboardController : Controller
@@ -17,16 +17,13 @@ public class DashboardController : Controller
     private readonly ISaleService _saleService;
 
     /// <summary>
-    /// Constructor
+    /// Constructor with dependency injection.
     /// </summary>
-    /// <param name="ingredientService"></param>
-    /// <param name="recipeService"></param>
-    /// <param name="taskService"></param>
     public DashboardController(
-    IIngredientService ingredientService,
-    IRecipeService recipeService,
-    ITaskService taskService,
-    ISaleService saleService)
+        IIngredientService ingredientService,
+        IRecipeService recipeService,
+        ITaskService taskService,
+        ISaleService saleService)
     {
         _ingredientService = ingredientService;
         _recipeService = recipeService;
@@ -35,41 +32,107 @@ public class DashboardController : Controller
     }
 
     /// <summary>
-    /// Displays dashboard summary.
+    /// Displays dashboard summary for the logged-in branch.
     /// </summary>
     public IActionResult Index()
     {
-        var ingredients = _ingredientService.GetAll();
-        var recipes = _recipeService.GetAll();
-        var tasks = _taskService.GetAll();
-        var sales = _saleService.GetAll();
+        // Retrieve BranchId from authentication claims
+        var branchIdClaim = User.FindFirst("BranchId")?.Value;
 
-        // Total Inventory Value
-        decimal totalInventoryValue = ingredients.Sum(i => i.QuantityOnHand * i.CostPerUnit);
+        if (string.IsNullOrEmpty(branchIdClaim))
+        {
+            return Unauthorized();
+        }
 
-        // Total Ingredients
-        int totalIngredients = ingredients.Count;
+        int branchId = int.Parse(branchIdClaim);
 
-        // Total Recipes
-        int totalRecipes = recipes.Count;
+        // =========================================
+        // BRANCH-FILTERED DATA RETRIEVAL
+        // =========================================
 
-        // Open Tasks
-        int openTasks = tasks.Count(t => t.Status != "Completed");
+        var ingredients =
+            _ingredientService.GetAll(branchId);
 
-        // Total Sales Revenue
-        decimal totalSales = sales.Sum(s => s.TotalAmount);
+        var recipes =
+            _recipeService.GetAll(branchId);
 
-        ViewBag.TotalInventoryValue = totalInventoryValue;
-        ViewBag.TotalIngredients = totalIngredients;
-        ViewBag.TotalRecipes = totalRecipes;
-        ViewBag.OpenTasks = openTasks;
-        ViewBag.TotalSales = totalSales;
+        var tasks =
+            _taskService.GetAll(branchId);
+
+        var sales =
+            _saleService.GetAll(branchId);
+
+        // =========================================
+        // LOW STOCK INVENTORY ALERTS
+        // =========================================
+
+        var lowStockIngredients = ingredients
+            .Where(i => i.QuantityOnHand <= i.ReorderLevel)
+            .OrderBy(i => i.QuantityOnHand)
+            .ToList();
+
+        // =========================================
+        // DASHBOARD KPI CALCULATIONS
+        // =========================================
+
+        // Total inventory value
+        decimal totalInventoryValue = ingredients.Sum(i =>
+            i.QuantityOnHand * i.CostPerUnit);
+
+        // Total ingredient count
+        int totalIngredients =
+            ingredients.Count;
+
+        // Total recipe count
+        int totalRecipes =
+            recipes.Count;
+
+        // Open task count
+        int openTasks = tasks.Count(t =>
+            t.Status != "Completed");
+
+        // Total sales revenue
+        decimal totalSales = sales.Sum(s =>
+            s.TotalAmount);
+
+        // Low stock ingredient count
+        int lowStockCount =
+            lowStockIngredients.Count;
+
+        // =========================================
+        // PASS DASHBOARD DATA TO VIEW
+        // =========================================
+
+        ViewBag.TotalInventoryValue =
+            totalInventoryValue;
+
+        ViewBag.TotalIngredients =
+            totalIngredients;
+
+        ViewBag.TotalRecipes =
+            totalRecipes;
+
+        ViewBag.OpenTasks =
+            openTasks;
+
+        ViewBag.TotalSales =
+            totalSales;
+
+        ViewBag.LowStockCount =
+            lowStockCount;
+
+        ViewBag.LowStockIngredients =
+            lowStockIngredients;
+
+        // =========================================
+        // SALES TREND CHART DATA
+        // =========================================
 
         var groupedSales = sales
-     .Where(s => s.SaleDate != default)
-     .GroupBy(s => s.SaleDate.Date)
-     .OrderBy(g => g.Key)
-     .ToList();
+            .Where(s => s.SaleDate != default)
+            .GroupBy(s => s.SaleDate.Date)
+            .OrderBy(g => g.Key)
+            .ToList();
 
         ViewBag.SalesDates = groupedSales
             .Select(g => g.Key.ToString("yyyy-MM-dd"))

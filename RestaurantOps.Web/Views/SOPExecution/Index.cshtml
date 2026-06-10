@@ -1,0 +1,50 @@
+@model List<RestaurantOps.Models.SOPTemplate>
+
+@{
+    ViewData["Title"] = "Available SOPs";
+}
+
+<h2 class="mb-4">Available SOP Checklists</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No SOP checklists are available for your branch.
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>SOP Name</th>
+                <th>Description</th>
+                <th>Items</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        @foreach (var sop in Model)
+        {
+            <tr>
+                <td>@sop.Name</td>
+                <td>@sop.Description</td>
+                <td>@sop.SOPItems.Count</td>
+                <td>
+                    <form asp-action="Start" method="post">
+                        <input type="hidden"
+                               name="sopTemplateId"
+                               value="@sop.SOPTemplateId" />
+
+                        <button type="submit"
+                                class="btn btn-success btn-sm">
+                            Start Checklist
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

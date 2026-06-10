@@ -29,16 +29,30 @@ public class SaleController : Controller
     /// </summary>
     public IActionResult Index()
     {
-        var sales = _saleService.GetAll();
+        var branchIdClaim = User.FindFirst("BranchId")?.Value;
+
+        if (string.IsNullOrEmpty(branchIdClaim))
+        {
+            return Unauthorized();
+        }
+
+        int branchId = int.Parse(branchIdClaim);
+
+        var sales = _saleService.GetAll(branchId);
+
         return View(sales);
     }
+
 
     /// <summary>
     /// Displays create sale form.
     /// </summary>
     public IActionResult Create()
     {
-        ViewBag.Recipes = _recipeService.GetAll();
+        var branchId = int.Parse(
+            User.FindFirst("BranchId")!.Value);
+
+        ViewBag.Recipes = _recipeService.GetAll(branchId);
         return View();
     }
 
@@ -46,15 +60,25 @@ public class SaleController : Controller
     /// Handles sale creation.
     /// </summary>
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Create(Sale sale)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            _saleService.Add(sale);
-            return RedirectToAction("Index");
+            var branchIdReload = int.Parse(
+                User.FindFirst("BranchId")!.Value);
+
+            ViewBag.Recipes =
+                _recipeService.GetAll(branchIdReload);
+
+            return View(sale);
         }
 
-        ViewBag.Recipes = _recipeService.GetAll();
-        return View(sale);
+        sale.BranchId = int.Parse(
+            User.FindFirst("BranchId")!.Value);
+
+        _saleService.Add(sale);
+
+        return RedirectToAction(nameof(Index));
     }
 }

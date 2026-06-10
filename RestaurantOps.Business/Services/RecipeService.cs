@@ -1,203 +1,388 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using RestaurantOps.Business.Interfaces;
-using RestaurantOps.Data;
+using RestaurantOps.Data.Interfaces;
 using RestaurantOps.Models;
 
 namespace RestaurantOps.Business.Services;
 
 /// <summary>
-/// Handles all business logic related to Recipes.
-/// This includes retrieving recipes, managing recipe ingredients,
-/// and calculating total recipe cost.
+/// Handles recipe-related business logic.
+/// Responsible for:
+/// - Recipe validation
+/// - Recipe costing
+/// - Profit calculations
+/// - Ingredient-to-recipe operations
+/// 
+/// Database access is delegated to repositories.
 /// </summary>
 public class RecipeService : IRecipeService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IRecipeRepository _repository;
+    private readonly IIngredientRepository _ingredientRepository;
     private readonly ILogger<RecipeService> _logger;
 
     /// <summary>
     /// Constructor with dependency injection.
     /// </summary>
-    /// <param name="context">Database context</param>
-    /// <param name="logger">Logger for tracking operations</param>
-    public RecipeService(ApplicationDbContext context, ILogger<RecipeService> logger)
+    /// <param name="repository">
+    /// Recipe repository for database operations.
+    /// </param>
+    /// <param name="ingredientRepository">
+    /// Ingredient repository for ingredient retrieval.
+    /// </param>
+    /// <param name="logger">
+    /// Logger for diagnostics and monitoring.
+    /// </param>
+    public RecipeService(
+        IRecipeRepository repository,
+        IIngredientRepository ingredientRepository,
+        ILogger<RecipeService> logger)
     {
-        _context = context;
+        _repository = repository;
+        _ingredientRepository = ingredientRepository;
         _logger = logger;
     }
 
     /// <summary>
-    /// Retrieves all recipes including their ingredients.
+    /// Retrieves all recipes.
+    /// Used for admin/global reporting.
     /// </summary>
-    /// <returns>List of recipes</returns>
     public List<Recipe> GetAll()
     {
         _logger.LogInformation("Fetching all recipes");
 
-        return _context.Recipes
-            .Include(r => r.RecipeIngredients)
-                .ThenInclude(ri => ri.Ingredient)
-            .ToList();
+        return _repository.GetAll();
     }
 
     /// <summary>
-    /// Retrieves a specific recipe by ID, including ingredients.
+    /// Retrieves recipes for a specific branch.
     /// </summary>
-    /// <param name="id">Recipe ID</param>
-    /// <returns>Recipe or null if not found</returns>
+    /// <param name="branchId">
+    /// Branch identifier.
+    /// </param>
+    public List<Recipe> GetAll(int branchId)
+    {
+        _logger.LogInformation(
+            "Fetching recipes for branch ID: {BranchId}",
+            branchId);
+
+        return _repository.GetAllByBranch(branchId);
+    }
+
+    /// <summary>
+    /// Retrieves a recipe by ID.
+    /// </summary>
+    /// <param name="id">
+    /// Recipe identifier.
+    /// </param>
     public Recipe? GetById(int id)
     {
-        _logger.LogInformation("Fetching recipe with ID: {RecipeId}", id);
+        _logger.LogInformation(
+            "Fetching recipe with ID: {Id}",
+            id);
 
-        return _context.Recipes
-            .Include(r => r.RecipeIngredients)
-                .ThenInclude(ri => ri.Ingredient)
-            .FirstOrDefault(r => r.RecipeId == id);
+        return _repository.GetById(id);
     }
 
     /// <summary>
-    /// Adds a new recipe to the database.
+    /// Adds a new recipe.
     /// </summary>
-    /// <param name="recipe">Recipe object</param>
+    /// <param name="recipe">
+    /// Recipe object to create.
+    /// </param>
     public void Add(Recipe recipe)
     {
-        _logger.LogInformation("Adding new recipe: {RecipeName}", recipe.Name);
+        if (recipe.SellingPrice <= 0)
+        {
+            _logger.LogError(
+                "Invalid recipe price for recipe: {Name}",
+                recipe.Name);
 
-        _context.Recipes.Add(recipe);
-        _context.SaveChanges();
+            throw new ArgumentException(
+                "Selling price must be greater than zero.");
+        }
+
+        _logger.LogInformation(
+            "Adding recipe: {Name}",
+            recipe.Name);
+
+        _repository.Add(recipe);
+        _repository.Save();
     }
 
     /// <summary>
     /// Updates an existing recipe.
     /// </summary>
-    /// <param name="recipe">Updated recipe object</param>
+    /// <param name="recipe">
+    /// Updated recipe object.
+    /// </param>
     public void Update(Recipe recipe)
     {
-        _logger.LogInformation("Updating recipe ID: {RecipeId}", recipe.RecipeId);
+        if (recipe.SellingPrice <= 0)
+        {
+            _logger.LogError(
+                "Invalid recipe update price for recipe: {Name}",
+                recipe.Name);
 
-        _context.Recipes.Update(recipe);
-        _context.SaveChanges();
+            throw new ArgumentException(
+                "Selling price must be greater than zero.");
+        }
+
+        _logger.LogInformation(
+            "Updating recipe: {Name}",
+            recipe.Name);
+
+        _repository.Update(recipe);
+        _repository.Save();
     }
 
     /// <summary>
     /// Deletes a recipe by ID.
     /// </summary>
-    /// <param name="id">Recipe ID</param>
+    /// <param name="id">
+    /// Recipe identifier.
+    /// </param>
     public void Delete(int id)
     {
-        _logger.LogWarning("Deleting recipe with ID: {RecipeId}", id);
+        _logger.LogWarning(
+            "Deleting recipe with ID: {Id}",
+            id);
 
-        var recipe = _context.Recipes.Find(id);
-
-        if (recipe != null)
-        {
-            _context.Recipes.Remove(recipe);
-            _context.SaveChanges();
-        }
+        _repository.Delete(id);
+        _repository.Save();
     }
 
     /// <summary>
-    /// Adds an ingredient to a recipe with a specified quantity.
+    /// Adds an ingredient to a recipe.
     /// </summary>
-    /// <param name="recipeId">Recipe ID</param>
-    /// <param name="ingredientId">Ingredient ID</param>
-    /// <param name="quantity">Quantity used in recipe</param>
-    public void AddIngredientToRecipe(int recipeId, int ingredientId, decimal quantity)
+    /// <param name="recipeId">
+    /// Recipe identifier.
+    /// </param>
+    /// <param name="ingredientId">
+    /// Ingredient identifier.
+    /// </param>
+    /// <param name="quantity">
+    /// Quantity required for recipe.
+    /// </param>
+    public void AddIngredientToRecipe(
+        int recipeId,
+        int ingredientId,
+        decimal quantity)
     {
-        _logger.LogInformation("Adding ingredient {IngredientId} to recipe {RecipeId}", ingredientId, recipeId);
-
-        var recipeIngredient = new RecipeIngredient
-        {
-            RecipeId = recipeId,
-            IngredientId = ingredientId,
-            Quantity = quantity
-        };
-
-        _context.RecipeIngredients.Add(recipeIngredient);
-        _context.SaveChanges();
-    }
-
-    /// <summary>
-    /// Calculates the total cost of a recipe based on its ingredients.
-    /// </summary>
-    /// <param name="recipeId">Recipe ID</param>
-    /// <returns>Total cost of the recipe</returns>
-    public decimal CalculateRecipeCost(int recipeId)
-    {
-        _logger.LogInformation("Calculating cost for recipe ID: {RecipeId}", recipeId);
-
-        var recipe = _context.Recipes
-            .Include(r => r.RecipeIngredients)
-                .ThenInclude(ri => ri.Ingredient)
-            .FirstOrDefault(r => r.RecipeId == recipeId);
+        var recipe = _repository.GetById(recipeId);
 
         if (recipe == null)
         {
-            _logger.LogWarning("Recipe not found for cost calculation");
-            return 0;
+            _logger.LogError(
+                "Recipe not found. Recipe ID: {RecipeId}",
+                recipeId);
+
+            throw new Exception("Recipe not found.");
         }
 
-        decimal totalCost = 0;
+        var ingredient = _ingredientRepository.GetById(ingredientId);
 
-        foreach (var ri in recipe.RecipeIngredients)
+        if (ingredient == null)
         {
-            if (ri.Ingredient != null)
-            {
-                totalCost += ri.Quantity * ri.Ingredient.CostPerUnit;
-            }
+            _logger.LogError(
+                "Ingredient not found. Ingredient ID: {IngredientId}",
+                ingredientId);
+
+            throw new Exception("Ingredient not found.");
         }
 
-        return totalCost;
+        recipe.RecipeIngredients.Add(new RecipeIngredient
+        {
+            RecipeId = recipeId,
+            IngredientId = ingredientId,
+            QuantityRequired = quantity
+        });
+
+        _repository.Update(recipe);
+        _repository.Save();
+
+        _logger.LogInformation(
+            "Ingredient added to recipe successfully.");
     }
 
     /// <summary>
     /// Removes an ingredient from a recipe.
     /// </summary>
-    public void RemoveIngredientFromRecipe(int recipeId, int ingredientId)
+    /// <param name="recipeId">
+    /// Recipe identifier.
+    /// </param>
+    /// <param name="ingredientId">
+    /// Ingredient identifier.
+    /// </param>
+    public void RemoveIngredientFromRecipe(
+        int recipeId,
+        int ingredientId)
     {
-        _logger.LogWarning("Removing ingredient {IngredientId} from recipe {RecipeId}", ingredientId, recipeId);
-
-        var item = _context.RecipeIngredients
-            .FirstOrDefault(ri => ri.RecipeId == recipeId && ri.IngredientId == ingredientId);
-
-        if (item != null)
-        {
-            _context.RecipeIngredients.Remove(item);
-            _context.SaveChanges();
-        }
-    }
-
-
-    /// <summary>
-    /// Calculates profit = Selling Price - Cost.
-    /// </summary>
-    public decimal CalculateProfit(int recipeId)
-    {
-        var recipe = _context.Recipes.FirstOrDefault(r => r.RecipeId == recipeId);
+        var recipe = _repository.GetById(recipeId);
 
         if (recipe == null)
-            return 0;
+        {
+            _logger.LogError(
+                "Recipe not found. Recipe ID: {RecipeId}",
+                recipeId);
 
-        var cost = CalculateRecipeCost(recipeId);
+            throw new Exception("Recipe not found.");
+        }
+
+        var recipeIngredient = recipe.RecipeIngredients
+            .FirstOrDefault(ri => ri.IngredientId == ingredientId);
+
+        if (recipeIngredient == null)
+        {
+            _logger.LogError(
+                "Ingredient not attached to recipe.");
+
+            throw new Exception(
+                "Ingredient not attached to recipe.");
+        }
+
+        recipe.RecipeIngredients.Remove(recipeIngredient);
+
+        _repository.Update(recipe);
+        _repository.Save();
+
+        _logger.LogInformation(
+            "Ingredient removed from recipe successfully.");
+    }
+
+    /// <summary>
+    /// Calculates the total recipe production cost.
+    /// </summary>
+    /// <param name="recipeId">
+    /// Recipe identifier.
+    /// </param>
+    public decimal CalculateRecipeCost(int recipeId)
+    {
+        var recipe = _repository.GetById(recipeId);
+
+        if (recipe == null)
+        {
+            _logger.LogError(
+                "Recipe not found for costing.");
+
+            throw new Exception("Recipe not found.");
+        }
+
+        decimal totalCost = 0;
+
+        foreach (var recipeIngredient in recipe.RecipeIngredients)
+        {
+            var ingredient = _ingredientRepository
+                .GetById(recipeIngredient.IngredientId);
+
+            if (ingredient != null)
+            {
+                totalCost +=
+                    ingredient.CostPerUnit *
+                    recipeIngredient.QuantityRequired;
+            }
+        }
+
+        _logger.LogInformation(
+            "Calculated recipe cost for recipe ID: {RecipeId}",
+            recipeId);
+
+        return totalCost;
+    }
+
+    /// <summary>
+    /// Calculates recipe profit.
+    /// </summary>
+    /// <param name="recipeId">
+    /// Recipe identifier.
+    /// </param>
+    public decimal CalculateProfit(int recipeId)
+    {
+        var recipe = _repository.GetById(recipeId);
+
+        if (recipe == null)
+        {
+            _logger.LogError(
+                "Recipe not found for profit calculation.");
+
+            throw new Exception("Recipe not found.");
+        }
+
+        decimal cost = CalculateRecipeCost(recipeId);
 
         return recipe.SellingPrice - cost;
     }
 
     /// <summary>
-    /// Calculates profit margin percentage.
-    /// Formula: (Profit / Selling Price) * 100
+    /// Calculates recipe profit margin percentage.
     /// </summary>
+    /// <param name="recipeId">
+    /// Recipe identifier.
+    /// </param>
     public decimal CalculateProfitMargin(int recipeId)
     {
-        var recipe = _context.Recipes.FirstOrDefault(r => r.RecipeId == recipeId);
+        var recipe = _repository.GetById(recipeId);
 
-        if (recipe == null || recipe.SellingPrice == 0)
+        if (recipe == null)
+        {
+            _logger.LogError(
+                "Recipe not found for margin calculation.");
+
+            throw new Exception("Recipe not found.");
+        }
+
+        decimal cost = CalculateRecipeCost(recipeId);
+
+        if (recipe.SellingPrice == 0)
             return 0;
 
-        var cost = CalculateRecipeCost(recipeId);
-        var profit = recipe.SellingPrice - cost;
+        decimal profit = recipe.SellingPrice - cost;
 
         return (profit / recipe.SellingPrice) * 100;
+    }
+
+    /// <summary>
+    /// Adds a preparation step to a recipe.
+    /// </summary>
+    public void AddStep(RecipeStep step)
+    {
+        _logger.LogInformation(
+            "Adding recipe step to recipe ID: {RecipeId}",
+            step.RecipeId);
+
+        var recipe = _repository.GetById(step.RecipeId);
+
+        if (recipe == null)
+        {
+            _logger.LogError(
+                "Recipe not found for step creation. RecipeId: {RecipeId}",
+                step.RecipeId);
+
+            throw new Exception("Recipe not found.");
+        }
+
+        _repository.AddStep(step);
+        _repository.Save();
+
+        _logger.LogInformation(
+            "Recipe step added successfully for RecipeId: {RecipeId}",
+            step.RecipeId);
+    }
+
+    /// <summary>
+    /// Retrieves preparation steps for a recipe.
+    /// </summary>
+    public List<RecipeStep> GetSteps(int recipeId)
+    {
+        var recipe = _repository.GetById(recipeId);
+
+        if (recipe == null)
+        {
+            return new List<RecipeStep>();
+        }
+
+        return recipe.RecipeSteps
+            .OrderBy(s => s.StepOrder)
+            .ToList();
     }
 }

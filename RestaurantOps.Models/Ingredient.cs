@@ -1,46 +1,71 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace RestaurantOps.Models;
 
 /// <summary>
-/// Represents an inventory ingredient used by the restaurant.
-/// This entity will be stored in the database.
+/// Represents an inventory ingredient used in recipes.
 /// </summary>
 public class Ingredient
 {
     /// <summary>
-    /// Primary key for the Ingredient table.
+    /// Primary key for Ingredient table.
     /// </summary>
     public int IngredientId { get; set; }
 
     /// <summary>
-    /// Ingredient display name, such as Chicken, Flour, or Tomato.
+    /// Ingredient name.
+    /// Example: Tomato, Pasta, Cheese.
     /// </summary>
-    [Required(ErrorMessage = "Name is required")]
+    [Required(ErrorMessage = "Ingredient name is required.")]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Unit of measurement, such as lb, kg, liter, or each.
-    /// </summary>
-    [Required(ErrorMessage = "Unit is required")]
-    public string Unit { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Quantity currently available in inventory.
+    /// Current inventory quantity available.
     /// </summary>
     [Column(TypeName = "decimal(10,2)")]
+    [Range(0, 999999)]
     public decimal QuantityOnHand { get; set; }
 
     /// <summary>
-    /// Cost of one unit of this ingredient.
+    /// Cost per inventory unit.
     /// </summary>
     [Column(TypeName = "decimal(10,2)")]
+    [Range(0, 999999)]
     public decimal CostPerUnit { get; set; }
 
     /// <summary>
-    /// Threshold level used to identify when the ingredient is low in stock.
+    /// Measurement unit.
+    /// Example: kg, g, liters, pcs.
+    /// </summary>
+    [Required(ErrorMessage = "Unit is required.")]
+    [StringLength(20)]
+    public string Unit { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Minimum stock level before reorder is needed.
     /// </summary>
     [Column(TypeName = "decimal(10,2)")]
+    [Range(0, 999999)]
     public decimal ReorderLevel { get; set; }
+
+    /// <summary>
+    /// Foreign key to branch.
+    /// Supports multi-branch inventory separation.
+    /// </summary>
+    [Required]
+    public int BranchId { get; set; }
+
+    /// <summary>
+    /// Navigation property to branch.
+    /// </summary>
+    [ForeignKey(nameof(BranchId))]
+    public Branch? Branch { get; set; }
+
+    /// <summary>
+    /// Relationship to recipes using this ingredient.
+    /// </summary>
+    public ICollection<RecipeIngredient> RecipeIngredients { get; set; }
+        = new List<RecipeIngredient>();
 }

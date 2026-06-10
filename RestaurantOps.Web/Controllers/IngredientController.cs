@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using RestaurantOps.Models;
 using RestaurantOps.Business.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using RestaurantOps.Business.Helpers;
 
 namespace RestaurantOps.Web.Controllers;
 
@@ -25,13 +26,16 @@ public class IngredientController : Controller
     /// Displays all ingredients
     /// </summary>
     public IActionResult Index()
-    {
-        var ingredients = _service.GetAll();
+{
+    int branchId = BranchHelper.GetBranchId(User);
 
-        ViewBag.TotalValue = _service.GetTotalInventoryValue();
+    var ingredients = _service.GetAll(branchId);
 
-        return View(ingredients);
-    }
+   ViewBag.TotalValue =
+    _service.GetTotalInventoryValue(branchId);
+
+    return View(ingredients);
+}
 
     /// <summary>
     /// Shows create form
@@ -42,27 +46,38 @@ public class IngredientController : Controller
         return View();
     }
 
-    /// <summary>
-    /// Handles form submission
-    /// </summary>
-    [Authorize(Roles = "Manager")]
-    [HttpPost]
-    public IActionResult Create(Ingredient ingredient)
+   /// <summary>
+/// Handles ingredient creation.
+/// Automatically assigns ingredient to logged-in branch.
+/// </summary>
+[Authorize(Roles = "Manager")]
+[HttpPost]
+[ValidateAntiForgeryToken]
+public IActionResult Create(Ingredient ingredient)
+{
+    try
     {
-        try
+        if (ModelState.IsValid)
         {
-            if (ModelState.IsValid)
-            {
-                _service.Add(ingredient);
-                return RedirectToAction("Index");
-            }
+            // Retrieve BranchId from logged-in user
+            int branchId =
+                BranchHelper.GetBranchId(User);
+
+            // Assign ingredient to branch
+            ingredient.BranchId = branchId;
+
+            _service.Add(ingredient);
+
+            return RedirectToAction(nameof(Index));
         }
-        catch (Exception ex)
-        {
-            ModelState.AddModelError("", ex.Message);
-        }
-        return View(ingredient);
     }
+    catch (Exception ex)
+    {
+        ModelState.AddModelError("", ex.Message);
+    }
+
+    return View(ingredient);
+}
 
     /// <summary>
     /// Displays edit form

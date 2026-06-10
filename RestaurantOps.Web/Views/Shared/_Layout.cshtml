@@ -56,12 +56,61 @@
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Task" asp-action="Index">Tasks</a>
                             </li>
-                        }
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SOP" asp-action="Index">
+                                    SOP Checklists
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SOP" asp-action="Executions">
+                                    SOP Monitoring
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="RecipeExecution" asp-action="Monitoring">
 
+                                    Kitchen Monitoring
+
+                                </a>
+                            </li>
+                        }
                         @if (User.Identity.IsAuthenticated && User.IsInRole("Staff"))
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Task" asp-action="MyTasks">My Tasks</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SOPExecution" asp-action="History">
+                                    My SOP History
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SOPExecution" asp-action="History">
+                                    My SOP History
+                                </a>
+                            </li>
+                        }
+                        @if (User.IsInRole("Staff"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="SOPExecution" asp-action="Index">
+                                    SOP Execution
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="RecipeExecution" asp-action="Index">
+
+                                    Kitchen Execution
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="RecipeExecution" asp-action="History">
+
+                                    My Kitchen History
+
+                                </a>
                             </li>
                         }
 

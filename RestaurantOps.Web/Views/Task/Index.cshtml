@@ -19,7 +19,27 @@
             <tr>
                 <td>@task.Title</td>
                 <td>@task.User?.Email</td>
-                <td>@task.Status</td>
+                <td>
+                    @if (task.IsOverdue)
+                    {
+                        <span class="badge bg-danger">
+                            Overdue
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">
+                            @task.Status
+                        </span>
+                    }
+                    @if (task.CompletedAt != null)
+                    {
+                        <small class="text-muted">
+                            Completed:
+                            @task.CompletedAt.Value.ToString("g")
+                        </small>
+                    }
+                </td>
                 <td>@task.DueDate.ToShortDateString()</td>
             </tr>
         }
