@@ -2,103 +2,189 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RestaurantOps.Web</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>
+        @(ViewData["Title"] ?? "RestaurantOps")
+        - RestaurantOps
+    </title>
+
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
 </head>
 
 <body>
 
-    <!-- NAVBAR -->
+    <!-- ========================================= -->
+    <!-- NAVIGATION -->
+    <!-- ========================================= -->
     <header>
+
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+
             <div class="container-fluid">
 
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index">RestaurantOps</a>
+                <!-- Brand -->
+                <a class="navbar-brand"
+                   asp-controller="Home"
+                   asp-action="Index">
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    RestaurantOps
+
+                </a>
+
+                <!-- Mobile Toggle -->
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNav">
+
                     <span class="navbar-toggler-icon"></span>
+
                 </button>
 
-                <div class="collapse navbar-collapse justify-content-between" id="mainNav">
+                <div class="collapse navbar-collapse justify-content-between"
+                     id="mainNav">
 
-                    <!-- LEFT SIDE -->
+                    <!-- ========================================= -->
+                    <!-- LEFT NAVIGATION -->
+                    <!-- ========================================= -->
+
                     <ul class="navbar-nav">
 
-                        @if (User.Identity.IsAuthenticated && User.IsInRole("Manager"))
+                        @if (User.Identity?.IsAuthenticated == true
+                       && User.IsInRole("Manager"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                            </li>
-                        }
+                                <a class="nav-link"
+                                   asp-controller="Dashboard"
+                                   asp-action="Index">
 
-                        @if (User.Identity.IsAuthenticated && User.IsInRole("Manager"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Recipe" asp-action="Index">Recipes</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Sale" asp-action="Index">Sales</a>
-                            </li>
-                        }
+                                    Dashboard
 
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-controller="Ingredient" asp-action="Index">Ingredients</a>
+                                </a>
                             </li>
-                        }
-                        @if (User.Identity.IsAuthenticated && User.IsInRole("Manager"))
-                        {
+
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Task" asp-action="Index">Tasks</a>
+                                <a class="nav-link"
+                                   asp-controller="Recipe"
+                                   asp-action="Index">
+
+                                    Recipes
+
+                                </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="SOP" asp-action="Index">
+                                <a class="nav-link"
+                                   asp-controller="Sale"
+                                   asp-action="Index">
+
+                                    Sales
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="Task"
+                                   asp-action="Index">
+
+                                    Tasks
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="SOP"
+                                   asp-action="Index">
+
                                     SOP Checklists
+
                                 </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="SOP" asp-action="Executions">
+                                <a class="nav-link"
+                                   asp-controller="SOP"
+                                   asp-action="Executions">
+
                                     SOP Monitoring
+
                                 </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="RecipeExecution" asp-action="Monitoring">
+                                <a class="nav-link"
+                                   asp-controller="RecipeExecution"
+                                   asp-action="Monitoring">
 
                                     Kitchen Monitoring
 
                                 </a>
                             </li>
                         }
-                        @if (User.Identity.IsAuthenticated && User.IsInRole("Staff"))
+
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Task" asp-action="MyTasks">My Tasks</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="SOPExecution" asp-action="History">
-                                    My SOP History
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="SOPExecution" asp-action="History">
-                                    My SOP History
+                                <a class="nav-link"
+                                   asp-controller="Ingredient"
+                                   asp-action="Index">
+
+                                    Ingredients
+
                                 </a>
                             </li>
                         }
-                        @if (User.IsInRole("Staff"))
+
+                        @if (User.Identity?.IsAuthenticated == true
+                       && User.IsInRole("Staff"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="SOPExecution" asp-action="Index">
-                                    SOP Execution
+                                <a class="nav-link"
+                                   asp-controller="Task"
+                                   asp-action="MyTasks">
+
+                                    My Tasks
+
                                 </a>
                             </li>
+
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="RecipeExecution" asp-action="Index">
+                                <a class="nav-link"
+                                   asp-controller="SOPExecution"
+                                   asp-action="Index">
+
+                                    SOP Execution
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="SOPExecution"
+                                   asp-action="History">
+
+                                    My SOP History
+
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link"
+                                   asp-controller="RecipeExecution"
+                                   asp-action="Index">
 
                                     Kitchen Execution
 
@@ -106,7 +192,9 @@
                             </li>
 
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="RecipeExecution" asp-action="History">
+                                <a class="nav-link"
+                                   asp-controller="RecipeExecution"
+                                   asp-action="History">
 
                                     My Kitchen History
 
@@ -116,50 +204,95 @@
 
                     </ul>
 
-                    <!-- RIGHT SIDE -->
+                    <!-- ========================================= -->
+                    <!-- RIGHT NAVIGATION -->
+                    <!-- ========================================= -->
+
                     <ul class="navbar-nav">
 
-                        @if (!User.Identity.IsAuthenticated)
+                        @if (User.Identity?.IsAuthenticated != true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+
+                                <a class="nav-link"
+                                   asp-controller="Account"
+                                   asp-action="Login">
+
+                                    Login
+
+                                </a>
+
                             </li>
                         }
 
-                        @if (User.Identity.IsAuthenticated)
+                        @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="btn btn-danger ms-2" asp-controller="Account" asp-action="Logout">Logout</a>
+
+                                <a class="btn btn-danger ms-2"
+                                   asp-controller="Account"
+                                   asp-action="Logout">
+
+                                    Logout
+
+                                </a>
+
                             </li>
                         }
 
                     </ul>
 
                 </div>
+
             </div>
+
         </nav>
+
     </header>
 
-    <!-- MAIN CONTENT (REQUIRED) -->
+    <!-- ========================================= -->
+    <!-- MAIN CONTENT -->
+    <!-- ========================================= -->
+
     <div class="container">
-        <main role="main" class="pb-3">
+
+        <main role="main"
+              class="pb-3">
+
             @RenderBody()
+
         </main>
+
     </div>
 
+    <!-- ========================================= -->
     <!-- FOOTER -->
+    <!-- ========================================= -->
+
     <footer class="border-top footer text-muted">
+
         <div class="container">
+
             &copy; 2026 - RestaurantOps
+
         </div>
+
     </footer>
 
+    <!-- ========================================= -->
     <!-- SCRIPTS -->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <!-- ========================================= -->
 
-    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    @await RenderSectionAsync(
+        "Scripts",
+        required: false)
 
 </body>
 

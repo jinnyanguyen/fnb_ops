@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RestaurantOps.Business.Interfaces;
+using RestaurantOps.Data;
+using RestaurantOps.Models;
+using RestaurantOps.Web.ViewModels;
 
 namespace RestaurantOps.Web.Controllers;
 
@@ -15,6 +18,9 @@ public class DashboardController : Controller
     private readonly IRecipeService _recipeService;
     private readonly ITaskService _taskService;
     private readonly ISaleService _saleService;
+    private readonly ISOPExecutionService _sopExecutionService;
+    private readonly IRecipeExecutionService _recipeExecutionService;
+    private readonly ApplicationDbContext _context;
 
     /// <summary>
     /// Constructor with dependency injection.
@@ -23,12 +29,18 @@ public class DashboardController : Controller
         IIngredientService ingredientService,
         IRecipeService recipeService,
         ITaskService taskService,
-        ISaleService saleService)
+        ISaleService saleService,
+        ISOPExecutionService sopExecutionService,
+        IRecipeExecutionService recipeExecutionService,
+        ApplicationDbContext context)
     {
         _ingredientService = ingredientService;
         _recipeService = recipeService;
         _taskService = taskService;
         _saleService = saleService;
+        _sopExecutionService = sopExecutionService;
+        _recipeExecutionService = recipeExecutionService;
+        _context = context;
     }
 
     /// <summary>
@@ -36,7 +48,6 @@ public class DashboardController : Controller
     /// </summary>
     public IActionResult Index()
     {
-        // Retrieve BranchId from authentication claims
         var branchIdClaim = User.FindFirst("BranchId")?.Value;
 
         if (string.IsNullOrEmpty(branchIdClaim))
@@ -46,87 +57,25 @@ public class DashboardController : Controller
 
         int branchId = int.Parse(branchIdClaim);
 
-        // =========================================
-        // BRANCH-FILTERED DATA RETRIEVAL
-        // =========================================
+        var ingredients = _ingredientService.GetAll(branchId);
+        var recipes = _recipeService.GetAll(branchId);
+        var tasks = _taskService.GetAll(branchId);
+        var sales = _saleService.GetAll(branchId);
 
-        var ingredients =
-            _ingredientService.GetAll(branchId);
+        var sopExecutions =
+            _sopExecutionService.GetExecutionsByBranch(branchId);
 
-        var recipes =
-            _recipeService.GetAll(branchId);
+        var recipeExecutions =
+            _recipeExecutionService.GetExecutionsByBranch(branchId);
 
-        var tasks =
-            _taskService.GetAll(branchId);
-
-        var sales =
-            _saleService.GetAll(branchId);
-
-        // =========================================
-        // LOW STOCK INVENTORY ALERTS
-        // =========================================
+        var staffUsers = _context.Users
+            .Where(u => u.BranchId == branchId && u.Role == "Staff")
+            .ToList();
 
         var lowStockIngredients = ingredients
             .Where(i => i.QuantityOnHand <= i.ReorderLevel)
             .OrderBy(i => i.QuantityOnHand)
             .ToList();
-
-        // =========================================
-        // DASHBOARD KPI CALCULATIONS
-        // =========================================
-
-        // Total inventory value
-        decimal totalInventoryValue = ingredients.Sum(i =>
-            i.QuantityOnHand * i.CostPerUnit);
-
-        // Total ingredient count
-        int totalIngredients =
-            ingredients.Count;
-
-        // Total recipe count
-        int totalRecipes =
-            recipes.Count;
-
-        // Open task count
-        int openTasks = tasks.Count(t =>
-            t.Status != "Completed");
-
-        // Total sales revenue
-        decimal totalSales = sales.Sum(s =>
-            s.TotalAmount);
-
-        // Low stock ingredient count
-        int lowStockCount =
-            lowStockIngredients.Count;
-
-        // =========================================
-        // PASS DASHBOARD DATA TO VIEW
-        // =========================================
-
-        ViewBag.TotalInventoryValue =
-            totalInventoryValue;
-
-        ViewBag.TotalIngredients =
-            totalIngredients;
-
-        ViewBag.TotalRecipes =
-            totalRecipes;
-
-        ViewBag.OpenTasks =
-            openTasks;
-
-        ViewBag.TotalSales =
-            totalSales;
-
-        ViewBag.LowStockCount =
-            lowStockCount;
-
-        ViewBag.LowStockIngredients =
-            lowStockIngredients;
-
-        // =========================================
-        // SALES TREND CHART DATA
-        // =========================================
 
         var groupedSales = sales
             .Where(s => s.SaleDate != default)
@@ -134,14 +83,60 @@ public class DashboardController : Controller
             .OrderBy(g => g.Key)
             .ToList();
 
-        ViewBag.SalesDates = groupedSales
-            .Select(g => g.Key.ToString("yyyy-MM-dd"))
-            .ToList();
+        var dashboardViewModel = new DashboardViewModel
+        {
+            TotalInventoryValue = ingredients.Sum(i =>
+                i.QuantityOnHand * i.CostPerUnit),
 
-        ViewBag.SalesTotals = groupedSales
-            .Select(g => g.Sum(s => s.TotalAmount))
-            .ToList();
+            TotalIngredients = ingredients.Count,
 
-        return View();
+            TotalRecipes = recipes.Count,
+
+            OpenTasks = tasks.Count(t =>
+                t.Status != "Completed"),
+
+            TotalSales = sales.Sum(s =>
+                s.TotalAmount),
+
+            LowStockCount = lowStockIngredients.Count,
+
+            LowStockIngredients = lowStockIngredients,
+
+            SalesDates = groupedSales
+                .Select(g => g.Key.ToString("yyyy-MM-dd"))
+                .ToList(),
+
+            SalesTotals = groupedSales
+                .Select(g => g.Sum(s => s.TotalAmount))
+                .ToList(),
+
+            StaffPerformance = staffUsers
+                .Select(user => new StaffPerformanceViewModel
+                {
+                    StaffName =
+                        $"{user.FirstName} {user.LastName}",
+
+                    SOPCompletedCount = sopExecutions.Count(e =>
+                        e.UserId == user.UserId &&
+                        e.ExecutionItems.Any() &&
+                        e.ExecutionItems.All(i => i.IsCompleted)),
+
+                    RecipeExecutionCount = recipeExecutions.Count(e =>
+                        e.UserId == user.UserId &&
+                        e.ExecutionSteps.Any() &&
+                        e.ExecutionSteps.All(s => s.IsCompleted)),
+
+                    TaskCompletedCount = tasks.Count(t =>
+                        t.UserId == user.UserId &&
+                        t.Status == "Completed"),
+
+                    OverdueTaskCount = tasks.Count(t =>
+                        t.UserId == user.UserId &&
+                        t.IsOverdue)
+                })
+                .ToList()
+        };
+
+        return View(dashboardViewModel);
     }
 }
