@@ -48,4 +48,42 @@ public class DashboardViewModel
         get;
         set;
     } = new();
+
+    public List<TopSellingRecipeViewModel>
+    TopSellingRecipes
+    {
+        get;
+        set;
+    } = new();
+
+    public List<MostUsedIngredientViewModel>
+    MostUsedIngredients
+    { get; set; } = new();
+
+    /// <summary>
+    /// Percentage of completed tasks.
+    /// </summary>
+    public decimal TaskCompletionRate
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Percentage of completed SOP executions.
+    /// </summary>
+    public decimal SOPComplianceRate
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Active kitchen sessions.
+    /// </summary>
+    public int ActiveKitchenSessions
+    {
+        get;
+        set;
+    }
 }

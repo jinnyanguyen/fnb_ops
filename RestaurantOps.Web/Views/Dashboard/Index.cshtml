@@ -7,6 +7,30 @@
 <h2 class="mb-4">
     Dashboard
 </h2>
+<div class="mb-4">
+
+    <a asp-action="ExportInventory"
+       class="btn btn-success">
+
+        Export Inventory
+
+    </a>
+
+    <a asp-action="ExportSales"
+       class="btn btn-primary">
+
+        Export Sales
+
+    </a>
+
+    <a asp-action="ExportStaffPerformance"
+       class="btn btn-dark">
+
+        Export Staff Performance
+
+    </a>
+
+</div>
 
 <!-- ========================================= -->
 <!-- KPI SUMMARY CARDS -->
@@ -157,6 +181,86 @@
 <hr />
 
 <!-- ========================================= -->
+<!-- OPERATIONS ANALYTICS -->
+<!-- ========================================= -->
+
+<div class="row mb-4">
+
+    <!-- TASK COMPLETION -->
+
+    <div class="col-md-4 mb-3">
+
+        <div class="card border-success shadow-sm">
+
+            <div class="card-body">
+
+                <h5>
+                    Task Completion
+                </h5>
+
+                <h2 class="text-success">
+
+                    @Model.TaskCompletionRate.ToString("0.0")%
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- SOP COMPLIANCE -->
+
+    <div class="col-md-4 mb-3">
+
+        <div class="card border-primary shadow-sm">
+
+            <div class="card-body">
+
+                <h5>
+                    SOP Compliance
+                </h5>
+
+                <h2 class="text-primary">
+
+                    @Model.SOPComplianceRate.ToString("0.0")%
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ACTIVE KITCHEN -->
+
+    <div class="col-md-4 mb-3">
+
+        <div class="card border-warning shadow-sm">
+
+            <div class="card-body">
+
+                <h5>
+                    Active Kitchen Sessions
+                </h5>
+
+                <h2 class="text-warning">
+
+                    @Model.ActiveKitchenSessions
+
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ========================================= -->
 <!-- LOW STOCK ALERTS -->
 <!-- ========================================= -->
 
@@ -241,9 +345,11 @@ else
     </div>
 }
 
-<canvas id="salesChart"
-        height="100">
-</canvas>
+<div style="height:400px">
+
+    <canvas id="salesChart"></canvas>
+
+</div>
 
 <hr />
 
@@ -340,6 +446,162 @@ else
     </div>
 }
 
+<!-- ========================================= -->
+<!-- ADVANCED BUSINESS ANALYTICS -->
+<!-- ========================================= -->
+
+<h3 class="mb-3">
+    Business Analytics
+</h3>
+
+<div class="row">
+
+    <!-- TOP SELLING RECIPES -->
+
+    <div class="col-md-6">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-primary text-white">
+
+                <h5 class="mb-0">
+                    Top Selling Recipes
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                @if (Model.TopSellingRecipes == null ||
+                    !Model.TopSellingRecipes.Any())
+                {
+                    <div class="alert alert-warning">
+
+                        No sales analytics available.
+
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-striped">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Recipe
+                                </th>
+
+                                <th>
+                                    Quantity Sold
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var recipe in Model.TopSellingRecipes)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @recipe.RecipeName
+                                    </td>
+
+                                    <td>
+                                        @recipe.QuantitySold
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MOST USED INGREDIENTS -->
+
+    <div class="col-md-6">
+
+        <div class="card shadow-sm mb-4">
+
+            <div class="card-header bg-success text-white">
+
+                <h5 class="mb-0">
+                    Most Used Ingredients
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                @if (!Model.MostUsedIngredients.Any())
+                {
+                    <div class="alert alert-warning">
+
+                        No inventory analytics available.
+
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-striped">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Ingredient
+                                </th>
+
+                                <th>
+                                    Quantity Used
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var ingredient in Model.MostUsedIngredients)
+                            {
+                                <tr>
+
+                                    <td>
+                                        @ingredient.IngredientName
+                                    </td>
+
+                                    <td>
+                                        @ingredient.QuantityUsed.ToString("0.00")
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 <!-- ========================================= -->
 <!-- CHART.JS -->
 <!-- ========================================= -->

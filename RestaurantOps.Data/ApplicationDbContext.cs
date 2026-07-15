@@ -64,4 +64,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<RecipeExecution> RecipeExecutions { get; set; }
 
     public DbSet<RecipeExecutionStep> RecipeExecutionSteps { get; set; }
+
+    public DbSet<InventoryTransaction>
+    InventoryTransactions
+{
+    get;
+    set;
+}
 }

@@ -1,43 +1,143 @@
 @model IEnumerable<RestaurantOps.Models.Ingredient>
 
+@{
+    ViewData["Title"] = "Ingredients";
+}
+
 <h2>Ingredients</h2>
 
 @if (User.IsInRole("Manager"))
 {
-    <a href="/Ingredient/Create" class="btn btn-primary">Add Ingredient</a>
+    <a asp-controller="Ingredient"
+       asp-action="Create"
+       class="btn btn-primary mb-3">
+
+        Add Ingredient
+
+    </a>
 }
 
-<h4>Total Inventory Value:
-    <span class="text-success">
-        @(ViewBag.TotalValue != null ? ((decimal)ViewBag.TotalValue).ToString("C") : "$0.00") </span>
-    </h4>
+<h4>
+    Total Inventory Value:
 
-    <table class="table table-striped mt-3">
-        <thead>
+    <span class="text-success">
+
+        @(ViewBag.TotalValue != null
+            ? ((decimal)ViewBag.TotalValue).ToString("C")
+            : "$0.00")
+
+    </span>
+
+</h4>
+
+<table class="table table-striped table-bordered mt-3">
+
+    <thead class="table-dark">
+
+        <tr>
+
+            <th>Name</th>
+
+            <th>Unit</th>
+
+            <th>Quantity</th>
+
+            <th>Cost Per Unit</th>
+
+            <th>Reorder Level</th>
+
+            <th>Status</th>
+
+            <th>Actions</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var item in Model)
+        {
+            bool isLowStock =
+                item.QuantityOnHand <= item.ReorderLevel;
+
             <tr>
-                <th>Name</th>
-                <th>Unit</th>
-                <th>Quantity</th>
-                <th>Cost</th>
-                <th>Actions</th>
+
+                <td>
+                    @item.Name
+                </td>
+
+                <td>
+                    @item.Unit
+                </td>
+
+                <td>
+                    @item.QuantityOnHand.ToString("0.##")
+                </td>
+
+                <td>
+                    $@item.CostPerUnit.ToString("0.00")
+                </td>
+
+                <td>
+                    @item.ReorderLevel.ToString("0.##")
+                </td>
+
+                <td>
+
+                    @if (isLowStock)
+                    {
+                        <span class="badge bg-danger">
+
+                            Low Stock
+
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">
+
+                            In Stock
+
+                        </span>
+                    }
+
+                </td>
+
+                <td>
+
+                    @if (User.IsInRole("Manager"))
+                    {
+                        <a asp-action="Edit"
+                           asp-route-id="@item.IngredientId"
+                           class="btn btn-warning btn-sm">
+
+                            Edit
+
+                        </a>
+
+                        <a asp-action="AdjustStock"
+                           asp-route-id="@item.IngredientId"
+                           class="btn btn-info btn-sm">
+
+                            Adjust Stock
+
+                        </a>
+
+                        <a asp-action="Delete"
+                           asp-route-id="@item.IngredientId"
+                           class="btn btn-danger btn-sm">
+
+                            Delete
+
+                        </a>
+                    }
+
+                </td>
+
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Name</td>
-                    <td>@item.Unit</td>
-                    <td>@item.QuantityOnHand.ToString("0.##")</td>
-                    <td>@item.CostPerUnit.ToString("0.00")</td>
-                    <td>
-                        @if (User.IsInRole("Manager"))
-                        {
-                            <a href="/Ingredient/Edit/@item.IngredientId" class="btn btn-warning btn-sm">Edit</a>
-                            <a href="/Ingredient/Delete/@item.IngredientId" class="btn btn-danger btn-sm">Delete</a>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        }
+
+    </tbody>
+
+</table>

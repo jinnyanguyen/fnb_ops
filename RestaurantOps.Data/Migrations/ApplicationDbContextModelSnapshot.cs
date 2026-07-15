@@ -84,6 +84,38 @@ namespace RestaurantOps.Data.Migrations
                     b.ToTable("Ingredients");
                 });
 
+            modelBuilder.Entity("RestaurantOps.Models.InventoryTransaction", b =>
+                {
+                    b.Property<int>("InventoryTransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("InventoryTransactionId"));
+
+                    b.Property<int>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IngredientId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("QuantityChanged")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("InventoryTransactionId");
+
+                    b.HasIndex("IngredientId");
+
+                    b.ToTable("InventoryTransactions");
+                });
+
             modelBuilder.Entity("RestaurantOps.Models.Recipe", b =>
                 {
                     b.Property<int>("RecipeId")
@@ -474,6 +506,17 @@ namespace RestaurantOps.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("RestaurantOps.Models.InventoryTransaction", b =>
+                {
+                    b.HasOne("RestaurantOps.Models.Ingredient", "Ingredient")
+                        .WithMany()
+                        .HasForeignKey("IngredientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ingredient");
                 });
 
             modelBuilder.Entity("RestaurantOps.Models.Recipe", b =>

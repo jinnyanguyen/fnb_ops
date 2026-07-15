@@ -1,0 +1,84 @@
+@model List<RestaurantOps.Models.InventoryTransaction>
+
+@{
+    ViewData["Title"] = "Inventory History";
+}
+
+<h2 class="mb-4">
+    Inventory Transaction History
+</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+
+        No inventory transactions found.
+
+    </div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+
+        <thead class="table-dark">
+
+            <tr>
+
+                <th>Date</th>
+
+                <th>Ingredient</th>
+
+                <th>Quantity Change</th>
+
+                <th>Reason</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var transaction in Model)
+            {
+                <tr>
+
+                    <td>
+                        @(transaction.TransactionDate.ToString("g"))
+                    </td>
+
+                    <td>
+                        @transaction.Ingredient?.Name
+                    </td>
+
+                    <td>
+
+                        @if (transaction.QuantityChanged < 0)
+                        {
+                            <span class="text-danger fw-bold">
+
+                                @transaction.QuantityChanged
+
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-success fw-bold">
+
+                               @transaction.QuantityChanged.ToString("0.00")
+
+                            </span>
+                        }
+
+                    </td>
+
+                    <td>
+                        @transaction.Reason
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+}

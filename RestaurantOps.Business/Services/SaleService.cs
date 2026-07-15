@@ -12,7 +12,15 @@ public class SaleService : ISaleService
 {
     private readonly ISaleRepository _repository;
     private readonly IRecipeRepository _recipeRepository;
+    private readonly IIngredientRepository _ingredientRepository;
     private readonly ILogger<SaleService> _logger;
+
+    /// <summary>
+    /// Repository for inventory audit logging.
+    /// </summary>
+    private readonly
+        IInventoryTransactionRepository
+        _inventoryTransactionRepository;
 
     /// <summary>
     /// Constructor with dependency injection.
@@ -20,10 +28,15 @@ public class SaleService : ISaleService
     public SaleService(
         ISaleRepository repository,
         IRecipeRepository recipeRepository,
+        IIngredientRepository ingredientRepository,
+        IInventoryTransactionRepository inventoryTransactionRepository,
         ILogger<SaleService> logger)
     {
         _repository = repository;
         _recipeRepository = recipeRepository;
+        _ingredientRepository = ingredientRepository;
+        _inventoryTransactionRepository =
+            inventoryTransactionRepository;
         _logger = logger;
     }
 
@@ -57,79 +70,130 @@ public class SaleService : ISaleService
         return _repository.GetById(id);
     }
 
-/// <summary>
-/// Adds a new sale.
-/// Automatically calculates TotalAmount
-/// and deducts ingredient inventory.
-/// </summary>
-public void Add(Sale sale)
-{
-    // Load recipe with ingredients
-    var recipe = _recipeRepository.GetById(sale.RecipeId);
-
-    if (recipe == null)
+    /// <summary>
+    /// Adds a new sale.
+    /// Automatically calculates TotalAmount
+    /// and deducts ingredient inventory.
+    /// </summary>
+    public void Add(Sale sale)
     {
-        _logger.LogError(
-            "Recipe not found for sale creation.");
+        var recipe =
+            _recipeRepository.GetById(sale.RecipeId);
 
-        throw new Exception("Recipe not found.");
-    }
-
-    // Auto-assign sale date
-    if (sale.SaleDate == default)
-    {
-        sale.SaleDate = DateTime.Now;
-    }
-
-    // Calculate sale total
-    sale.TotalAmount =
-        recipe.SellingPrice * sale.QuantitySold;
-
-    // ===== INVENTORY DEDUCTION =====
-
-    foreach (var recipeIngredient in recipe.RecipeIngredients)
-    {
-        var ingredient = recipeIngredient.Ingredient;
-
-        if (ingredient == null)
-        {
-            continue;
-        }
-
-        // Total inventory deduction
-        var deductionAmount =
-            recipeIngredient.QuantityRequired *
-            sale.QuantitySold;
-
-        // Prevent negative inventory
-        if (ingredient.QuantityOnHand < deductionAmount)
+        if (recipe == null)
         {
             _logger.LogError(
-                "Insufficient inventory for ingredient: {IngredientName}",
-                ingredient.Name);
+                "Recipe not found for sale creation.");
 
             throw new Exception(
-                $"Not enough inventory for {ingredient.Name}");
+                "Recipe not found.");
         }
 
-        // Deduct inventory
-        ingredient.QuantityOnHand -= deductionAmount;
+        if (sale.SaleDate == default)
+        {
+            sale.SaleDate = DateTime.Now;
+        }
+
+        // =========================================
+        // INVENTORY VALIDATION
+        // =========================================
+
+        foreach (var recipeIngredient
+            in recipe.RecipeIngredients)
+        {
+            var ingredient =
+                _ingredientRepository.GetById(
+                    recipeIngredient.IngredientId);
+
+            if (ingredient == null)
+            {
+                throw new Exception(
+                    $"Ingredient not found.");
+            }
+
+            decimal quantityNeeded =
+                recipeIngredient.QuantityRequired *
+                sale.QuantitySold;
+
+            if (ingredient.QuantityOnHand <
+                quantityNeeded)
+            {
+                throw new Exception(
+                    $"Insufficient inventory for {ingredient.Name}. " +
+                    $"Required: {quantityNeeded}, " +
+                    $"Available: {ingredient.QuantityOnHand}");
+            }
+        }
+
+        // =========================================
+        // INVENTORY DEDUCTION
+        // =========================================
+
+        foreach (var recipeIngredient
+            in recipe.RecipeIngredients)
+        {
+            var ingredient =
+                _ingredientRepository.GetById(
+                    recipeIngredient.IngredientId);
+
+            if (ingredient == null)
+            {
+                continue;
+            }
+
+            decimal quantityNeeded =
+                recipeIngredient.QuantityRequired *
+                sale.QuantitySold;
+
+            ingredient.QuantityOnHand -=
+    quantityNeeded;
+
+            _ingredientRepository.Update(
+                ingredient);
+
+            _inventoryTransactionRepository.Add(
+                new InventoryTransaction
+                {
+                    IngredientId =
+                        ingredient.IngredientId,
+
+                    QuantityChanged =
+                        -quantityNeeded,
+
+                    Reason =
+                        $"Sale - Recipe: {recipe.Name}",
+
+                    TransactionDate =
+                        DateTime.Now,
+
+                    BranchId =
+                        sale.BranchId
+                });
+        }
+
+        // =========================================
+        // SALE TOTAL
+        // =========================================
+
+        sale.TotalAmount =
+            recipe.SellingPrice *
+            sale.QuantitySold;
+
+        _repository.Add(sale);
+
+        // Save inventory updates
+        _ingredientRepository.Save();
+
+        // Save inventory audit records
+        _inventoryTransactionRepository.Save();
+
+        // Save sale record
+        _repository.Save();
 
         _logger.LogInformation(
-            "Deducted {Amount} from ingredient {IngredientName}",
-            deductionAmount,
-            ingredient.Name);
+            "Sale created and inventory deducted. Recipe ID: {RecipeId}",
+            sale.RecipeId);
     }
-
-    // Save sale
-    _repository.Add(sale);
-
-    // Save inventory updates + sale
-    _repository.Save();
-
-    _logger.LogInformation(
-        "Sale created successfully with inventory deduction.");
-}
 
     /// <summary>
     /// Updates an existing sale.

@@ -22,6 +22,7 @@ builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ISOPRepository, SOPRepository>();
+builder.Services.AddScoped<IInventoryTransactionRepository,InventoryTransactionRepository>();
 
 // Register Service (Business Layer)
 builder.Services.AddScoped<IIngredientService, IngredientService>();
@@ -32,6 +33,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISOPService, SOPService>();
 builder.Services.AddScoped<ISOPExecutionService,SOPExecutionService>();
 builder.Services.AddScoped<IRecipeExecutionService,RecipeExecutionService>();
+builder.Services.AddScoped<IInventoryTransactionService,InventoryTransactionService>();
 
 Console.WriteLine("IAuthService Registered Successfully");
 
