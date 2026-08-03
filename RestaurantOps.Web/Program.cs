@@ -5,6 +5,9 @@ using RestaurantOps.Data.Repositories;
 using RestaurantOps.Business.Interfaces;
 using RestaurantOps.Business.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using RestaurantOps.Data.Repositories.Interfaces;
+using RestaurantOps.Business.Services.Interfaces;
+using RestaurantOps.Data.Transactions;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +26,10 @@ builder.Services.AddScoped<ISaleRepository, SaleRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ISOPRepository, SOPRepository>();
 builder.Services.AddScoped<IInventoryTransactionRepository,InventoryTransactionRepository>();
+builder.Services.AddScoped<IExternalBranchMappingRepository,ExternalBranchMappingRepository>();
+builder.Services.AddScoped<IImportedSaleRecordRepository,ImportedSaleRecordRepository>();
+builder.Services.AddScoped<ITransactionManager,TransactionManager>();
+builder.Services.AddScoped<IExternalRecipeMappingRepository,ExternalRecipeMappingRepository>();
 
 // Register Service (Business Layer)
 builder.Services.AddScoped<IIngredientService, IngredientService>();
@@ -34,6 +41,10 @@ builder.Services.AddScoped<ISOPService, SOPService>();
 builder.Services.AddScoped<ISOPExecutionService,SOPExecutionService>();
 builder.Services.AddScoped<IRecipeExecutionService,RecipeExecutionService>();
 builder.Services.AddScoped<IInventoryTransactionService,InventoryTransactionService>();
+builder.Services.AddScoped<IExternalBranchMappingService,ExternalBranchMappingService>();
+builder.Services.AddScoped<IImportedSaleRecordService,ImportedSaleRecordService>();
+builder.Services.AddScoped<IImportedSaleService,ImportedSaleService>();
+builder.Services.AddScoped<IExternalRecipeMappingService,ExternalRecipeMappingService>();
 
 Console.WriteLine("IAuthService Registered Successfully");
 

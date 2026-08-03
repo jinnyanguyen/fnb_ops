@@ -22,15 +22,18 @@ public class SaleService : ISaleService
         IInventoryTransactionRepository
         _inventoryTransactionRepository;
 
+    private readonly ITransactionManager _transactionManager;
+
     /// <summary>
     /// Constructor with dependency injection.
     /// </summary>
     public SaleService(
-        ISaleRepository repository,
-        IRecipeRepository recipeRepository,
-        IIngredientRepository ingredientRepository,
-        IInventoryTransactionRepository inventoryTransactionRepository,
-        ILogger<SaleService> logger)
+    ISaleRepository repository,
+    IRecipeRepository recipeRepository,
+    IIngredientRepository ingredientRepository,
+    IInventoryTransactionRepository inventoryTransactionRepository,
+    ILogger<SaleService> logger,
+    ITransactionManager transactionManager)
     {
         _repository = repository;
         _recipeRepository = recipeRepository;
@@ -38,6 +41,7 @@ public class SaleService : ISaleService
         _inventoryTransactionRepository =
             inventoryTransactionRepository;
         _logger = logger;
+        _transactionManager = transactionManager;
     }
 
     /// <summary>
@@ -70,12 +74,21 @@ public class SaleService : ISaleService
         return _repository.GetById(id);
     }
 
+
+    public void Add(Sale sale)
+    {
+        ArgumentNullException.ThrowIfNull(sale);
+
+        _transactionManager.Execute(
+            () => AddInternal(sale));
+    }
+
     /// <summary>
     /// Adds a new sale.
     /// Automatically calculates TotalAmount
     /// and deducts ingredient inventory.
     /// </summary>
-    public void Add(Sale sale)
+    public void AddInternal(Sale sale)
     {
         var recipe =
             _recipeRepository.GetById(sale.RecipeId);

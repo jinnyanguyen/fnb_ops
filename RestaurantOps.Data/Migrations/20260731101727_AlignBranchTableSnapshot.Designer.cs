@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RestaurantOps.Data;
 
@@ -11,9 +12,11 @@ using RestaurantOps.Data;
 namespace RestaurantOps.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731101727_AlignBranchTableSnapshot")]
+    partial class AlignBranchTableSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,116 +85,6 @@ namespace RestaurantOps.Data.Migrations
                     b.HasIndex("BranchId");
 
                     b.ToTable("Ingredients");
-                });
-
-            modelBuilder.Entity("RestaurantOps.Models.Integrations.ExternalBranchMapping", b =>
-                {
-                    b.Property<int>("ExternalBranchMappingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ExternalBranchMappingId"));
-
-                    b.Property<int>("BranchId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("ExternalStoreId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("SourceSystem")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.HasKey("ExternalBranchMappingId");
-
-                    b.HasIndex("BranchId");
-
-                    b.HasIndex("SourceSystem", "ExternalStoreId")
-                        .IsUnique();
-
-                    b.ToTable("ExternalBranchMappings");
-                });
-
-            modelBuilder.Entity("RestaurantOps.Models.Integrations.ExternalRecipeMapping", b =>
-                {
-                    b.Property<int>("ExternalRecipeMappingId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ExternalRecipeMappingId"));
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("ExternalItemId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SourceSystem")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.HasKey("ExternalRecipeMappingId");
-
-                    b.HasIndex("RecipeId");
-
-                    b.HasIndex("SourceSystem", "ExternalItemId")
-                        .IsUnique();
-
-                    b.ToTable("ExternalRecipeMappings");
-                });
-
-            modelBuilder.Entity("RestaurantOps.Models.Integrations.ImportedSaleRecord", b =>
-                {
-                    b.Property<int>("ImportedSaleRecordId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ImportedSaleRecordId"));
-
-                    b.Property<string>("ExternalSaleId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<DateTime>("ImportedAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsSuccessful")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Message")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
-
-                    b.Property<string>("SourceSystem")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.HasKey("ImportedSaleRecordId");
-
-                    b.HasIndex("SourceSystem", "ExternalSaleId")
-                        .IsUnique();
-
-                    b.ToTable("ImportedSaleRecords");
                 });
 
             modelBuilder.Entity("RestaurantOps.Models.InventoryTransaction", b =>
@@ -616,28 +509,6 @@ namespace RestaurantOps.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("RestaurantOps.Models.Integrations.ExternalBranchMapping", b =>
-                {
-                    b.HasOne("RestaurantOps.Models.Branch", "Branch")
-                        .WithMany()
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("RestaurantOps.Models.Integrations.ExternalRecipeMapping", b =>
-                {
-                    b.HasOne("RestaurantOps.Models.Recipe", "Recipe")
-                        .WithMany()
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
                 });
 
             modelBuilder.Entity("RestaurantOps.Models.InventoryTransaction", b =>

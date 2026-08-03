@@ -4,6 +4,7 @@
     <ProjectReference Include="..\RestaurantOps.Business\RestaurantOps.Business.csproj" />
     <ProjectReference Include="..\RestaurantOps.Data\RestaurantOps.Data.csproj" />
     <ProjectReference Include="..\RestaurantOps.Models\RestaurantOps.Models.csproj" />
+    <ProjectReference Include="..\RestaurantOps.Integrations\RestaurantOps.Integrations.csproj" />
   </ItemGroup>
 
   <ItemGroup>
