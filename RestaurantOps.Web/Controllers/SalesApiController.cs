@@ -83,7 +83,7 @@ public sealed class SalesApiController : ControllerBase
         try
         {
             var result =
-                await _importedSaleService.ProcessAsync(command);
+                await _importedSaleService.ImportAsync(command);
 
             return Ok(new
             {

@@ -39,7 +39,7 @@ public sealed class ImportedSaleService : IImportedSaleService
     }
 
     /// <inheritdoc />
-    public async Task<ImportedSaleResult> ProcessAsync(
+    public async Task<ImportedSaleResult> ImportAsync(
         ImportedSaleCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);

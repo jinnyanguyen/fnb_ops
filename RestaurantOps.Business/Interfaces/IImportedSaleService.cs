@@ -12,6 +12,6 @@ public interface IImportedSaleService
     /// Processes one external sale using the existing sales,
     /// inventory-deduction, and audit-log business logic.
     /// </summary>
-    Task<ImportedSaleResult> ProcessAsync(
+    Task<ImportedSaleResult> ImportAsync(
         ImportedSaleCommand command);
 }

@@ -4,5 +4,6 @@
   <Project Path="RestaurantOps.Infrastructure/RestaurantOps.Infrastructure.csproj" />
   <Project Path="RestaurantOps.Integrations/RestaurantOps.Integrations.csproj" />
   <Project Path="RestaurantOps.Models/RestaurantOps.Models.csproj" />
+  <Project Path="RestaurantOps.Tests/RestaurantOps.Tests.csproj" />
   <Project Path="RestaurantOps.Web/RestaurantOps.Web.csproj" />
 </Solution>

@@ -4,6 +4,10 @@
     <ProjectReference Include="..\RestaurantOps.Models\RestaurantOps.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Build this class library using .NET 8. -->
     <TargetFramework>net8.0</TargetFramework>

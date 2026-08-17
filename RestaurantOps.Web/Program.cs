@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using RestaurantOps.Data.Repositories.Interfaces;
 using RestaurantOps.Business.Services.Interfaces;
 using RestaurantOps.Data.Transactions;
+using RestaurantOps.Integrations.Contracts;
+using RestaurantOps.Integrations.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,7 +48,11 @@ builder.Services.AddScoped<IImportedSaleRecordService,ImportedSaleRecordService>
 builder.Services.AddScoped<IImportedSaleService,ImportedSaleService>();
 builder.Services.AddScoped<IExternalRecipeMappingService,ExternalRecipeMappingService>();
 
+
 Console.WriteLine("IAuthService Registered Successfully");
+
+// Register Integration Layer
+builder.Services.AddScoped<ICsvSalesParser, CsvSalesParser>();
 
 // Add MVC
 builder.Services.AddControllersWithViews();
