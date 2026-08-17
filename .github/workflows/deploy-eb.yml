@@ -15,26 +15,81 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---------------------------------------------------------
+      # Checkout repository
+      # ---------------------------------------------------------
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      # ---------------------------------------------------------
+      # Install the .NET 8 SDK used by Gusto Ops
+      # ---------------------------------------------------------
       - name: Setup .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-      
-      - name: Debug - List files
-        run: ls -R
 
+      # ---------------------------------------------------------
+      # Restore NuGet dependencies
+      # The repository now uses RestaurantOps.slnx.
+      # ---------------------------------------------------------
       - name: Restore solution
-        run: dotnet restore RestaurantOps.sln
+        run: dotnet restore RestaurantOps.slnx
 
+      # ---------------------------------------------------------
+      # Build the complete solution in Release mode
+      # ---------------------------------------------------------
       - name: Build solution
-        run: dotnet build RestaurantOps.sln --configuration Release --no-restore
+        run: >
+          dotnet build RestaurantOps.slnx
+          --configuration Release
+          --no-restore
 
+      # ---------------------------------------------------------
+      # Run automated tests before deployment
+      # A failed test prevents deployment.
+      # ---------------------------------------------------------
+      - name: Run automated tests
+        run: >
+          dotnet test RestaurantOps.Tests/RestaurantOps.Tests.csproj
+          --configuration Release
+          --no-build
+
+      # ---------------------------------------------------------
+      # Publish as self-contained Linux x64.
+      # This bundles the .NET 8 runtime so the application
+      # does not depend on Elastic Beanstalk's installed .NET 10.
+      # ---------------------------------------------------------
       - name: Publish web app
-        run: dotnet publish RestaurantOps.Web/RestaurantOps.Web.csproj --configuration Release --output publish --no-build
+        run: >
+          dotnet publish RestaurantOps.Web/RestaurantOps.Web.csproj
+          --configuration Release
+          --runtime linux-x64
+          --self-contained true
+          --output publish
 
+      # ---------------------------------------------------------
+      # Explicitly tell Elastic Beanstalk to launch the
+      # self-contained Linux executable.
+      # ---------------------------------------------------------
+      - name: Create Procfile
+        run: |
+          echo "web: ./RestaurantOps.Web" > publish/Procfile
+
+      # ---------------------------------------------------------
+      # Optional deployment-package verification
+      # ---------------------------------------------------------
+      - name: Verify publish output
+        run: |
+          test -f publish/RestaurantOps.Web
+          test -f publish/Procfile
+          test -f publish/RestaurantOps.Integrations.dll
+          test -f publish/CsvHelper.dll
+          echo "Deployment package verified."
+
+      # ---------------------------------------------------------
+      # Configure AWS credentials stored in GitHub Secrets
+      # ---------------------------------------------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -42,10 +97,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # ---------------------------------------------------------
+      # Generate a unique Elastic Beanstalk application version
+      # ---------------------------------------------------------
       - name: Generate deployment version label
         id: version_label
-        run: echo "label=build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        run: |
+          echo "label=build-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
+      # ---------------------------------------------------------
+      # Deploy published application to Elastic Beanstalk
+      # ---------------------------------------------------------
       - name: Deploy to Elastic Beanstalk
         uses: aws-actions/aws-elasticbeanstalk-deploy@v1.0.2
         with:
